@@ -27,7 +27,7 @@ CORS(app)
 
 @app.route('/')
 def hello_world():
-    return '<html><body><p>ahobokekasu</p></body></html>'
+    return '<html><body><p>It works.</p></body></html>'
 
 @app.route('/api/patients', methods=['GET', 'POST'])
 def list_patients():
