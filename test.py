@@ -37,6 +37,12 @@ def camel_to_snake(string):
     result = pattern.sub(r'_\0', string)
     return result.lower()
 
+def validiate_token(token):
+    if token == 'hanamogera':
+        return 0
+    else:
+        return None
+
 app = Flask(__name__)
 CORS(app)
 
@@ -44,9 +50,28 @@ CORS(app)
 def hello_world():
     return '<html><body><p>It works.</p></body></html>'
 
-@app.route('/api/patients', methods=['GET', 'POST'])
+@app.route('/api/patients', methods=['GET'])
 def list_patients():
     return jsonify(patients_list)
+
+@app.route('/api/baseline/new', methods=['GET'])
+def get_new_pt_number():
+    header = request.headers.get("Authorization")
+    _,token = header.split()
+    print( token )
+    user_id = validiate_token(token)
+    query = f'''
+        INSERT INTO `patients` 
+            (`registered_by`)
+        VALUES ({user_id});
+    '''
+    print( query )
+    cursor.execute( query )
+    connection.commit()
+    cursor.execute('SELECT last_insert_id();')
+    new_id = cursor.fetchone()
+    print( new_id[0] )
+    return str(new_id)
 
 @app.route('/api/baseline/<int:patient_serial_number>', methods=['GET'])
 def give_baseline_data(patient_serial_number):
