@@ -69,7 +69,7 @@ def format_value(value):
 
 def format_data_to_insert(data):
     data = format_dic(data, 'snake')
-    data_pairs = map( lambda k: k + " = " + format_value( data[k] ), data )
+    data_pairs = map( lambda k: '`' + k + '`' + " = " + format_value( data[k] ), data )
     return ','.join( data_pairs )
 
 def format_data_to_cast(data):
@@ -86,6 +86,18 @@ def format_data_to_cast(data):
         else:
             data_to_cast[k] = v
     return data_to_cast
+
+def create_new_ucg():
+    query = '''
+        INSERT INTO `ucg` () VALUES();
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    cursor.execute( 'SELECT last_insert_id();' )
+    new_id = cursor.fetchone()
+    cursor.close()
+    return new_id['last_insert_id()']
 
 app = Flask(__name__)
 CORS(app)
@@ -120,9 +132,18 @@ def get_new_pt_number():
     connection.commit()
     cursor.execute('SELECT last_insert_id();')
     new_id = cursor.fetchone()
-    print( new_id[0] )
+    patient_id = new_id['last_insert_id()']
     cursor.close()
-    return str(new_id[0])
+    cursor = get_cursor()
+    ucg_id = create_new_ucg()
+    query = f'''
+        UPDATE `patients`
+            SET `ucg_id` = { ucg_id }
+        WHERE `patient_serial_number` = { patient_id };
+    '''
+    cursor.execute( query )
+    cursor.close()
+    return str( patient_id )
 
 @app.route('/api/baseline/<int:patient_serial_number>', methods=['GET'])
 def give_baseline_data(patient_serial_number):
@@ -151,6 +172,66 @@ def update_baseline_data(patient_serial_number):
     connection.commit()
     cursor.close()
     return "ok"
+
+@app.route('/api/ucg/new', methods=['GET'])
+def get_new_ucg_number():
+    query = '''
+        INSERT INTO `ucg`
+        (`lvdd`)
+        VALUES (NULL);
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    new_id = cursor.execute( 'SELECT last_insert_id();' )
+    new_id = cursor.fetchone()
+    cursor.close()
+    print( new_id )
+    return jsonify( new_id['last_insert_id()'] )
+
+@app.route('/api/ucg/<int:ucg_id>', methods=['GET'])
+def give_ucg_data(ucg_id):
+    query = f'''
+        SELECT * FROM `ucg`
+            WHERE `ucg_id` = { ucg_id };
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    ucg = cursor.fetchone()
+    cursor.close()
+    return jsonify( format_data_to_cast( ucg ) )
+
+@app.route('/api/ucg/<int:ucg_id>', methods=['POST'])
+def update_ucg_data(ucg_id):
+    ucg_data = format_data_to_insert( request.json )
+    query = f'''
+        UPDATE `ucg`
+            SET { ucg_data }
+        WHERE `ucg_id` = { ucg_id };
+    '''
+    print( query );
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    cursor.close()
+    return "ok"
+
+@app.route('/api/1st-abl/<int:patient_serial_number>', methods=['GET'])
+def give_first_abl_data(patient_serial_number):
+    q_data = f'''
+        SELECT * FROM `first_ablation`
+            WHERE `patient_serial_number` = { patient_serial_number };
+    '''
+    q_new_data = f'''
+        INSERT INTO `first_ablation`
+            (`patient_serial_number`)
+        VALUES ( { patient_serial_number } );
+    '''
+    cursor = get_cursor()
+    cursor.execute( q_data )
+    result = cursor.fetchall()
+    cursor.close()
+    return jsonify( len( result ))
 
 if __name__ == '__main__':
     app.run()
