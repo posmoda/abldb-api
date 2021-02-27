@@ -109,11 +109,11 @@ def hello_world():
 @app.route('/api/patients', methods=['GET'])
 def list_patients():
     cursor = get_cursor()
-    query = '''SELECT `patient_serial_number` FROM patients'''
+    query = '''SELECT * FROM patient_list`'''
     cursor.execute( query )
     patients_list = format_dic_keys( cursor.fetchall(), "camel" )
     for row in patients_list:
-        row['baseline'] = True
+        row['followingAblations'] = [1,2,3,4]
     cursor.close()
     return jsonify(patients_list)
 
@@ -230,8 +230,126 @@ def give_first_abl_data(patient_serial_number):
     cursor = get_cursor()
     cursor.execute( q_data )
     result = cursor.fetchall()
+    print( result )
+    if len( result ) == 0:
+        cursor.execute( q_new_data )
+        connection.commit()
+        cursor.execute( q_data )
+        abl_data = cursor.fetchone()
+    else:
+        abl_data = result[0]
+    print( abl_data )
     cursor.close()
-    return jsonify( len( result ))
+    return jsonify( format_data_to_cast( abl_data ) )
+
+@app.route('/api/1st-abl/<int:patient_serial_number>', methods=['POST'])
+def update_first_abl_data(patient_serial_number):
+    abl_data = format_data_to_insert( request.json )
+    query = f'''
+        UPDATE `first_ablation`
+            SET { abl_data }
+        WHERE `patient_serial_number` = { patient_serial_number };
+    '''
+    print( query )
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    cursor.close()
+    return 'First ablation update: SUCCESS'
+
+@app.route('/api/1st-abl/<int:first_abl_id>/medication_id', methods=['GET'])
+def give_med_id_for_first_abl(first_abl_id):
+    query = f'''
+        SELECT `internal_medicine_id` FROM `first_ablation`
+            WHERE `first_ablation_id` = { first_abl_id };
+    '''
+    q_new_medicine = "INSERT INTO `internal_medicine` () VALUES ();"
+    cursor = get_cursor()
+    cursor.execute( query )
+    result = cursor.fetchone()
+    medicine_id = result[ 'internal_medicine_id' ]
+    if medicine_id is None:
+        cursor.execute( q_new_medicine )
+        connection.commit()
+        cursor.execute( 'SELECT last_insert_id();' )
+        result = cursor.fetchone()
+        print( result )
+        medicine_id = result['last_insert_id()']
+        q_register_medicine = f'''
+            UPDATE `first_ablation`
+                SET `internal_medicine_id` = { medicine_id }
+                WHERE `first_ablation_id` = { first_abl_id };
+        '''
+        cursor.execute( q_register_medicine )
+        connection.commit()
+    cursor.close()
+    return jsonify(medicine_id)
+
+@app.route('/api/medication/<int:medication_id>', methods=['GET'])
+def give_medication_data(medication_id):
+    query = f'''
+        SELECT * FROM `internal_medicine`
+            WHERE `internal_medicine_id` = { medication_id }
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    medication_data = cursor.fetchone()
+    cursor.close()
+    return jsonify( format_data_to_cast( medication_data ) )
+
+@app.route('/api/medication/<int:medication_id>', methods=['POST'])
+def update_medication_data(medication_id):
+    medication_data = format_data_to_insert( request.json )
+    query = f'''
+        UPDATE `internal_medicine`
+            SET { medication_data }
+        WHERE `internal_medicine_id` = { medication_id };
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    cursor.close
+    return "ok"
+
+@app.route('/api/following_ablation/new/<int:patient_serial_number>', methods=['GET'])
+def get_new_follow_ablation_number(patient_serial_number):
+    query = f'''
+        INSERT INTO `following_ablation`
+            ( patient_serial_number ) VALUES ( { patient_serial_number } );
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    new_id = cursor.execute( 'SELECT last_insert_id();' )
+    new_id = cursor.fetchone()
+    cursor.close()
+    return jsonify( new_id['last_insert_id()'] )
+
+@app.route('/api/following_ablation/<int:following_ablation_id>', methods=['GET'])
+def give_following_ablation_data(following_ablation_id):
+    query = f'''
+        SELECT * FROM `following_ablation`
+            WHERE `following_ablation_id` = { following_ablation_id };
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    follow_ablation = cursor.fetchone()
+    cursor.close()
+    return jsonify( format_data_to_cast( follow_ablation ) )
+
+@app.route('/api/following_ablation/<int:following_ablation_id>', methods=['POST'])
+def update_following_ablation_data(following_ablation_id):
+    following_ablation_data = format_data_to_insert( request.json )
+    query = f'''
+        UPDATE `following_ablation`
+            SET { following_ablation_data }
+        WHERE `following_ablation_id` = { following_ablation_id };
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    cursor.close()
+    return "ok"
 
 if __name__ == '__main__':
     app.run()
