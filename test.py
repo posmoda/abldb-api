@@ -109,7 +109,7 @@ def hello_world():
 @app.route('/api/patients', methods=['GET'])
 def list_patients():
     cursor = get_cursor()
-    query = '''SELECT * FROM patient_list`'''
+    query = '''SELECT * FROM patient_list;'''
     cursor.execute( query )
     patients_list = format_dic_keys( cursor.fetchall(), "camel" )
     for row in patients_list:
@@ -322,6 +322,16 @@ def get_new_follow_ablation_number(patient_serial_number):
     connection.commit()
     new_id = cursor.execute( 'SELECT last_insert_id();' )
     new_id = cursor.fetchone()
+    follow_ablation_id = new_id['last_insert_id()']
+    cursor.close()
+    ucg_id = create_new_ucg()
+    query = f'''
+        UPDATE `following_ablation`
+            SET `ucg_id` = { ucg_id }
+        WHERE `following_ablation_id` =  { follow_ablation_id };
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
     cursor.close()
     return jsonify( new_id['last_insert_id()'] )
 
