@@ -12,3 +12,6 @@ flask-cors = "*"
 
 [requires]
 python_version = "3.6"
+
+[scripts]
+FLASK_APP = "app.py"

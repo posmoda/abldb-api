@@ -99,6 +99,18 @@ def create_new_ucg():
     cursor.close()
     return new_id['last_insert_id()']
 
+def create_new_medicine():
+    query = '''
+        INSERT INTO `internal_medicine` () VALUES ();
+    '''
+    cursor = get_cursor()
+    cursor.execute( query )
+    connection.commit()
+    cursor.execute( 'SELECT last_insert_id();' )
+    new_id = cursor.fetchone()
+    cursor.close()
+    return new_id['last_insert_id()']
+
 app = Flask(__name__)
 CORS(app)
 
@@ -111,11 +123,38 @@ def list_patients():
     cursor = get_cursor()
     query = '''SELECT * FROM patient_list;'''
     cursor.execute( query )
-    patients_list = format_dic_keys( cursor.fetchall(), "camel" )
+    patients_list = cursor.fetchall()
     for row in patients_list:
-        row['followingAblations'] = [1,2,3,4]
+        pt_number = row['patient_serial_number']
+        query_follow_abl = f'''
+            SELECT `following_ablation_id` FROM `following_ablation`
+                WHERE `patient_serial_number` = { pt_number };
+        '''
+        cursor.execute( query_follow_abl )
+        res_follow_abl = cursor.fetchall()
+        row['following_ablations'] = list( map( lambda x: x['following_ablation_id'], res_follow_abl ))
     cursor.close()
-    return jsonify(patients_list)
+    patients_list = list( map( format_data_to_cast, patients_list ) )
+    return jsonify( patients_list )
+
+@app.route('/api/patients/<int:patient_serial_number>', methods=['GET'])
+def give_a_patient(patient_serial_number):
+    cursor = get_cursor()
+    query = f'''
+        SELECT * FROM `patient_list`
+            WHERE `patient_serial_number` = { patient_serial_number };
+    '''
+    cursor.execute( query )
+    patient = cursor.fetchone()
+    query_follow_abl = f'''
+        SELECT `following_ablation_id` FROM `following_ablation`
+            WHERE `patient_serial_number` = { patient_serial_number }
+    '''
+    cursor.execute( query_follow_abl )
+    res_follow_abl = cursor.fetchall()
+    patient['following_ablations'] = list( map( lambda x: x['following_ablation_id'], res_follow_abl ))
+    cursor.close
+    return jsonify( format_data_to_cast( patient ) )
 
 @app.route('/api/baseline/new', methods=['GET'])
 def get_new_pt_number():
@@ -195,6 +234,7 @@ def give_ucg_data(ucg_id):
         SELECT * FROM `ucg`
             WHERE `ucg_id` = { ucg_id };
     '''
+    print( query )
     cursor = get_cursor()
     cursor.execute( query )
     ucg = cursor.fetchone()
@@ -287,6 +327,7 @@ def give_med_id_for_first_abl(first_abl_id):
 
 @app.route('/api/medication/<int:medication_id>', methods=['GET'])
 def give_medication_data(medication_id):
+    print( medication_id )
     query = f'''
         SELECT * FROM `internal_medicine`
             WHERE `internal_medicine_id` = { medication_id }
@@ -325,13 +366,15 @@ def get_new_follow_ablation_number(patient_serial_number):
     follow_ablation_id = new_id['last_insert_id()']
     cursor.close()
     ucg_id = create_new_ucg()
+    medicine_id = create_new_medicine()
     query = f'''
         UPDATE `following_ablation`
-            SET `ucg_id` = { ucg_id }
+            SET `ucg_id` = { ucg_id }, `internal_medicine_id` = { medicine_id }
         WHERE `following_ablation_id` =  { follow_ablation_id };
     '''
     cursor = get_cursor()
     cursor.execute( query )
+    connection.commit()
     cursor.close()
     return jsonify( new_id['last_insert_id()'] )
 
@@ -344,6 +387,7 @@ def give_following_ablation_data(following_ablation_id):
     cursor = get_cursor()
     cursor.execute( query )
     follow_ablation = cursor.fetchone()
+    print( follow_ablation )
     cursor.close()
     return jsonify( format_data_to_cast( follow_ablation ) )
 
@@ -362,4 +406,4 @@ def update_following_ablation_data(following_ablation_id):
     return "ok"
 
 if __name__ == '__main__':
-    app.run()
+    app.run( debug=True )
