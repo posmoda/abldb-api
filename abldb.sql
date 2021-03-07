@@ -1,8 +1,8 @@
 -- --------------------------------------------------------
--- ホスト:                          127.0.0.1
--- サーバーのバージョン:                   10.3.7-MariaDB - mariadb.org binary distribution
--- サーバー OS:                      Win64
--- HeidiSQL バージョン:               11.2.0.6213
+-- Host:                         127.0.0.1
+-- Server version:               10.5.8-MariaDB - mariadb.org binary distribution
+-- Server OS:                    Win64
+-- HeidiSQL Version:             11.2.0.6213
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -13,27 +13,25 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
--- abldb のデータベース構造をダンプしています
+-- Dumping database structure for abldb
 DROP DATABASE IF EXISTS `abldb`;
 CREATE DATABASE IF NOT EXISTS `abldb` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `abldb`;
 
---  テーブル abldb.blood_exam の構造をダンプしています
+-- Dumping structure for table abldb.blood_exam
 DROP TABLE IF EXISTS `blood_exam`;
 CREATE TABLE IF NOT EXISTS `blood_exam` (
   `patient_serial_number` int(11) NOT NULL,
-  `date` date NOT NULL,
+  `date` date DEFAULT NULL,
   `cre` float(10,5) DEFAULT NULL,
   `bnp` float(10,5) DEFAULT NULL,
   PRIMARY KEY (`patient_serial_number`),
-  CONSTRAINT `fk_blood_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON UPDATE CASCADE
+  CONSTRAINT `fk_blood_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.blood_exam: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `blood_exam` DISABLE KEYS */;
-/*!40000 ALTER TABLE `blood_exam` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.doac の構造をダンプしています
+-- Dumping structure for table abldb.doac
 DROP TABLE IF EXISTS `doac`;
 CREATE TABLE IF NOT EXISTS `doac` (
   `doac_id` int(11) NOT NULL,
@@ -41,11 +39,9 @@ CREATE TABLE IF NOT EXISTS `doac` (
   PRIMARY KEY (`doac_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.doac: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `doac` DISABLE KEYS */;
-/*!40000 ALTER TABLE `doac` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.ecg の構造をダンプしています
+-- Dumping structure for table abldb.ecg
 DROP TABLE IF EXISTS `ecg`;
 CREATE TABLE IF NOT EXISTS `ecg` (
   `ecg_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -57,24 +53,22 @@ CREATE TABLE IF NOT EXISTS `ecg` (
   `beta_blocker` bit(1) DEFAULT NULL,
   PRIMARY KEY (`ecg_id`),
   KEY `fk_ecg_pt_idx` (`patient_serial_number`),
-  CONSTRAINT `fk_ecg_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `fk_ecg_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.ecg: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `ecg` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ecg` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.first_ablation の構造をダンプしています
+-- Dumping structure for table abldb.first_ablation
 DROP TABLE IF EXISTS `first_ablation`;
 CREATE TABLE IF NOT EXISTS `first_ablation` (
   `first_ablation_id` int(11) NOT NULL AUTO_INCREMENT,
-  `date` date NOT NULL,
-  `internal_medicine_id` int(11) NOT NULL,
+  `date` date DEFAULT NULL,
+  `internal_medicine_id` int(11) DEFAULT NULL,
   `patient_serial_number` int(11) NOT NULL,
-  `threed_system` int(11) DEFAULT NULL,
-  `left_low_voltage_ratio_05v` double(10,5) DEFAULT NULL,
-  `left_low_voltage_ratio_08v` double(10,5) DEFAULT NULL,
-  `left_low_voltage_ratio_10v` double(10,5) DEFAULT NULL,
+  `threed_system` varchar(50) DEFAULT NULL,
+  `left_low_voltage_ratio05v` double(10,5) DEFAULT NULL,
+  `left_low_voltage_ratio08v` double(10,5) DEFAULT NULL,
+  `left_low_voltage_ratio10v` double(10,5) DEFAULT NULL,
   `left_angiography` bit(1) DEFAULT NULL,
   `eepvi` bit(1) DEFAULT NULL,
   `completed_eepvi` bit(1) DEFAULT NULL,
@@ -159,36 +153,34 @@ CREATE TABLE IF NOT EXISTS `first_ablation` (
   `sinus_dissection` bit(1) DEFAULT NULL,
   `sinus_stenosis` bit(1) DEFAULT NULL,
   `hold_damaged_valve` bit(1) DEFAULT NULL,
-  `cured_dameged_valve` bit(1) DEFAULT NULL,
+  `cured_damaged_valve` bit(1) DEFAULT NULL,
   `aortic_dissection` bit(1) DEFAULT NULL,
   `contrast_agent_allergy` bit(1) DEFAULT NULL,
   `agent_allergy_detail` varchar(255) DEFAULT NULL,
   `other_medicine_allergy` bit(1) DEFAULT NULL,
-  `medicine_name_causes_allergy` varchar(255) DEFAULT NULL,
+  `other_medicine_name_causes_allergy` varchar(255) DEFAULT NULL,
   `other_complications` bit(1) DEFAULT NULL,
   PRIMARY KEY (`first_ablation_id`),
   KEY `fk_firstab_pt_idx` (`patient_serial_number`),
   KEY `fk_firstab_med_idx` (`internal_medicine_id`),
-  CONSTRAINT `fk_firstab_med` FOREIGN KEY (`internal_medicine_id`) REFERENCES `internal_medicine` (`internal_medicine_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_firstab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  CONSTRAINT `fk_firstab_med` FOREIGN KEY (`internal_medicine_id`) REFERENCES `internal_medicine` (`internal_medicine_id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_firstab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.first_ablation: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `first_ablation` DISABLE KEYS */;
-/*!40000 ALTER TABLE `first_ablation` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.following_ablation の構造をダンプしています
+-- Dumping structure for table abldb.following_ablation
 DROP TABLE IF EXISTS `following_ablation`;
 CREATE TABLE IF NOT EXISTS `following_ablation` (
   `following_ablation_id` int(11) NOT NULL AUTO_INCREMENT,
-  `date` date NOT NULL,
+  `date` date DEFAULT NULL,
   `patient_serial_number` int(11) NOT NULL,
   `ucg_id` int(11) DEFAULT NULL,
   `internal_medicine_id` int(11) DEFAULT NULL,
-  `threed_system` int(11) DEFAULT NULL,
-  `left_low_voltage_ratio_05v` float(10,5) DEFAULT NULL,
-  `left_low_voltage_ratio_08v` float(10,5) DEFAULT NULL,
-  `left_low_voltage_ratio_10v` float(10,5) DEFAULT NULL,
+  `threed_system` varchar(50) DEFAULT NULL,
+  `left_low_voltage_ratio05v` float(10,5) DEFAULT NULL,
+  `left_low_voltage_ratio08v` float(10,5) DEFAULT NULL,
+  `left_low_voltage_ratio10v` float(10,5) DEFAULT NULL,
   `lpv_reisolation` bit(1) DEFAULT NULL,
   `only_lspv` bit(1) DEFAULT NULL,
   `only_lipv` bit(1) DEFAULT NULL,
@@ -204,12 +196,12 @@ CREATE TABLE IF NOT EXISTS `following_ablation` (
   `svc_reisolation` bit(1) DEFAULT NULL,
   `completed_svc_reisolation` bit(1) DEFAULT NULL,
   `new_svci` bit(1) DEFAULT NULL,
-  `conpleted_new_svci` bit(1) DEFAULT NULL,
+  `completed_new_svci` bit(1) DEFAULT NULL,
   `plsvc_reisolation` bit(1) DEFAULT NULL,
   `completed_plsvc_reisolation` bit(1) DEFAULT NULL,
   `new_plsvc_reisolation` bit(1) DEFAULT NULL,
   `non_pv_foci` bit(1) DEFAULT NULL,
-  `non_pv_foci_place` bit(1) DEFAULT NULL,
+  `non_pv_foci_place` varchar(50) DEFAULT NULL,
   `low_voltage_abl` bit(1) DEFAULT NULL,
   `la_cfae` bit(1) DEFAULT NULL,
   `ra_cfae` bit(1) DEFAULT NULL,
@@ -227,11 +219,11 @@ CREATE TABLE IF NOT EXISTS `following_ablation` (
   `new_bottom_line` bit(1) DEFAULT NULL,
   `completed_new_bottom_line` bit(1) DEFAULT NULL,
   `mitral_line_rec` bit(1) DEFAULT NULL,
-  `mitral_line_reablatioin` bit(1) DEFAULT NULL,
-  `mitral_line_reablatioin_cs` bit(1) DEFAULT NULL,
+  `mitral_line_reablation` bit(1) DEFAULT NULL,
+  `mitral_line_reablation_cs` bit(1) DEFAULT NULL,
   `completed_mitral_line_reablation` bit(1) DEFAULT NULL,
   `new_post_mitral_line` bit(1) DEFAULT NULL,
-  `new_post_mitral_line_line_cs` bit(1) DEFAULT NULL,
+  `new_post_mitral_line_cs` bit(1) DEFAULT NULL,
   `new_anterior_mitral_line` bit(1) DEFAULT NULL,
   `completed_new_anterior_mitral_line` bit(1) DEFAULT NULL,
   `completed_new_mitral_line` bit(1) DEFAULT NULL,
@@ -249,21 +241,19 @@ CREATE TABLE IF NOT EXISTS `following_ablation` (
   `burst_pacing` bit(1) DEFAULT NULL,
   `isp` bit(1) DEFAULT NULL,
   `complications` bit(1) DEFAULT NULL,
-  `complecations_detail` varchar(255) DEFAULT NULL,
+  `complications_detail` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`following_ablation_id`),
   KEY `fk_followab_pt_idx` (`patient_serial_number`),
   KEY `fk_followab_ucg_idx` (`ucg_id`),
   KEY `fk_followab_med_idx` (`internal_medicine_id`),
   CONSTRAINT `fk_followab_med` FOREIGN KEY (`internal_medicine_id`) REFERENCES `internal_medicine` (`internal_medicine_id`),
-  CONSTRAINT `fk_followab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`),
+  CONSTRAINT `fk_followab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_followab_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.following_ablation: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `following_ablation` DISABLE KEYS */;
-/*!40000 ALTER TABLE `following_ablation` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.follow_up の構造をダンプしています
+-- Dumping structure for table abldb.follow_up
 DROP TABLE IF EXISTS `follow_up`;
 CREATE TABLE IF NOT EXISTS `follow_up` (
   `follow_up_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -381,11 +371,9 @@ CREATE TABLE IF NOT EXISTS `follow_up` (
   CONSTRAINT `fk_followup_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.follow_up: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `follow_up` DISABLE KEYS */;
-/*!40000 ALTER TABLE `follow_up` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.holter の構造をダンプしています
+-- Dumping structure for table abldb.holter
 DROP TABLE IF EXISTS `holter`;
 CREATE TABLE IF NOT EXISTS `holter` (
   `holter_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -406,11 +394,9 @@ CREATE TABLE IF NOT EXISTS `holter` (
   CONSTRAINT `fk_holter_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.holter: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `holter` DISABLE KEYS */;
-/*!40000 ALTER TABLE `holter` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.hospital の構造をダンプしています
+-- Dumping structure for table abldb.hospital
 DROP TABLE IF EXISTS `hospital`;
 CREATE TABLE IF NOT EXISTS `hospital` (
   `hospital_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -419,16 +405,14 @@ CREATE TABLE IF NOT EXISTS `hospital` (
   UNIQUE KEY `hospital_id_UNIQUE` (`hospital_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.hospital: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `hospital` DISABLE KEYS */;
-/*!40000 ALTER TABLE `hospital` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.internal_medicine の構造をダンプしています
+-- Dumping structure for table abldb.internal_medicine
 DROP TABLE IF EXISTS `internal_medicine`;
 CREATE TABLE IF NOT EXISTS `internal_medicine` (
   `internal_medicine_id` int(11) NOT NULL AUTO_INCREMENT,
   `wf` bit(1) DEFAULT NULL,
-  `doac_id` int(11) DEFAULT NULL,
+  `doac` varchar(50) DEFAULT NULL,
   `doac_amount` int(11) DEFAULT NULL,
   `asa` bit(1) DEFAULT NULL,
   `thienopyridine` bit(1) DEFAULT NULL,
@@ -456,34 +440,29 @@ CREATE TABLE IF NOT EXISTS `internal_medicine` (
   `h2_blocker` bit(1) DEFAULT NULL,
   `steroid` bit(1) DEFAULT NULL,
   PRIMARY KEY (`internal_medicine_id`),
-  KEY `fk_medicine_doac_idx` (`doac_id`),
-  CONSTRAINT `fk_medicine_doac` FOREIGN KEY (`doac_id`) REFERENCES `doac` (`doac_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  KEY `fk_medicine_doac_idx` (`doac`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.internal_medicine: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `internal_medicine` DISABLE KEYS */;
-/*!40000 ALTER TABLE `internal_medicine` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.patients の構造をダンプしています
+-- Dumping structure for table abldb.patients
 DROP TABLE IF EXISTS `patients`;
 CREATE TABLE IF NOT EXISTS `patients` (
   `patient_serial_number` int(11) NOT NULL AUTO_INCREMENT,
   `registered_by` int(11) NOT NULL DEFAULT 0,
   `hospital_id` int(11) DEFAULT NULL,
-  `salt` varchar(255) NOT NULL,
-  `patient_id_hash` binary(128) NOT NULL,
   `ucg_id` int(11) DEFAULT NULL,
-  `name` varchar(255) NOT NULL,
-  `name_kana` varchar(255) NOT NULL,
-  `sex` bit(1) NOT NULL DEFAULT b'0',
-  `birthday` date NOT NULL,
-  `height` double(4,1) unsigned DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `name_kana` varchar(255) DEFAULT NULL,
+  `sex` bit(1) DEFAULT b'0',
   `weight` double(4,1) unsigned DEFAULT NULL,
+  `birthday` date DEFAULT NULL,
+  `height` double(4,1) unsigned DEFAULT NULL,
   `af_kind` varchar(50) DEFAULT '0',
   `ehra_score` varchar(10) DEFAULT NULL,
   `has_symptom` bit(1) DEFAULT NULL,
   `frality_scale` int(11) DEFAULT NULL,
-  `rhythm` tinyint(4) DEFAULT NULL,
+  `rhythm` varchar(50) DEFAULT NULL,
   `heart_rate` int(10) unsigned DEFAULT NULL,
   `pr_gap` int(11) DEFAULT NULL,
   `qrs` int(11) DEFAULT NULL,
@@ -496,6 +475,8 @@ CREATE TABLE IF NOT EXISTS `patients` (
   `af_onset_on` date DEFAULT NULL,
   `af_immobilized_on` date DEFAULT NULL,
   `maze` bit(1) DEFAULT NULL,
+  `open_heart` bit(1) DEFAULT NULL,
+  `open_heart_detail` varchar(255) DEFAULT NULL,
   `ht` bit(1) DEFAULT NULL,
   `dm` bit(1) DEFAULT NULL,
   `dyslip` bit(1) DEFAULT NULL,
@@ -542,15 +523,20 @@ CREATE TABLE IF NOT EXISTS `patients` (
   KEY `fk_pt_ucg_idx` (`ucg_id`),
   CONSTRAINT `fk_pt_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`),
   CONSTRAINT `pt_hospital_id` FOREIGN KEY (`hospital_id`) REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.patients: ~1 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `patients` DISABLE KEYS */;
-REPLACE INTO `patients` (`patient_serial_number`, `registered_by`, `hospital_id`, `salt`, `patient_id_hash`, `ucg_id`, `name`, `name_kana`, `sex`, `birthday`, `height`, `weight`, `af_kind`, `ehra_score`, `has_symptom`, `frality_scale`, `rhythm`, `heart_rate`, `pr_gap`, `qrs`, `sss`, `av_block`, `pm`, `icd`, `crtp`, `crtd`, `af_onset_on`, `af_immobilized_on`, `maze`, `ht`, `dm`, `dyslip`, `hu`, `smoking_history`, `dialysys`, `thrombosis`, `ischemic_stroke`, `tia`, `hemorrhagic_stroke`, `isth_bleeding`, `problematic_bleeding`, `chf_nyha`, `blood_vessel_disease`, `sas`, `omi`, `ihd`, `hcm`, `dcm`, `other_cardiomiopathy`, `mr`, `ms`, `valvular_disease`, `hyperthyroidism`, `hypothyreosis`, `asd`, `other_congenital`, `ctd`, `malignancy`, `hba1c`, `cre`, `egfr`, `ccr`, `nt_pro_bnp`, `bnp`, `aptt`, `pt_inr`, `d_dimer`, `hb`, `tsh`, `ft4`) VALUES
-	(1, 0, NULL, '12345\r\n', _binary 0x3132333435000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, NULL, 'test', 'test', b'0', '2021-02-01', NULL, NULL, '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-/*!40000 ALTER TABLE `patients` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.recurrence の構造をダンプしています
+-- Dumping structure for view abldb.patient_list
+DROP VIEW IF EXISTS `patient_list`;
+-- Creating temporary table to overcome VIEW dependency errors
+CREATE TABLE `patient_list` (
+	`patient_serial_number` INT(11) NOT NULL,
+	`first_ablation_id` INT(11) NULL,
+	`internal_medicine_id` INT(11) NULL
+) ENGINE=MyISAM;
+
+-- Dumping structure for table abldb.recurrence
 DROP TABLE IF EXISTS `recurrence`;
 CREATE TABLE IF NOT EXISTS `recurrence` (
   `recurrence_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -565,14 +551,12 @@ CREATE TABLE IF NOT EXISTS `recurrence` (
   `antiarrhythmia_by_recurrence` bit(1) DEFAULT NULL,
   PRIMARY KEY (`recurrence_id`),
   KEY `fk_recurrence_pt_idx` (`patient_serial_number`),
-  CONSTRAINT `fk_recurrence_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_recurrence_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.recurrence: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `recurrence` DISABLE KEYS */;
-/*!40000 ALTER TABLE `recurrence` ENABLE KEYS */;
+-- Data exporting was unselected.
 
---  テーブル abldb.ucg の構造をダンプしています
+-- Dumping structure for table abldb.ucg
 DROP TABLE IF EXISTS `ucg`;
 CREATE TABLE IF NOT EXISTS `ucg` (
   `ucg_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -585,13 +569,13 @@ CREATE TABLE IF NOT EXISTS `ucg` (
   `la_diameter_horizontal` float(10,5) DEFAULT NULL,
   `mr4grades` tinyint(3) unsigned DEFAULT NULL,
   `mr3grades` tinyint(3) unsigned DEFAULT NULL,
-  `e-e` float(10,5) DEFAULT NULL,
+  `e_e` float(10,5) DEFAULT NULL,
   `e_wave` float(10,5) DEFAULT NULL,
-  `a_wave` float(10,5) NOT NULL,
+  `a_wave` float(10,5) DEFAULT NULL,
   `dct` float(10,5) DEFAULT NULL,
   `ar4grades` tinyint(3) unsigned DEFAULT NULL,
   `ar3grades` tinyint(3) unsigned DEFAULT NULL,
-  `tr4grades` tinyint(3) unsigned zerofill DEFAULT NULL,
+  `tr4grades` tinyint(3) unsigned DEFAULT NULL,
   `tr3grades` tinyint(3) unsigned DEFAULT NULL,
   `tr_pg` int(11) DEFAULT NULL,
   `ms3grades` tinyint(3) unsigned DEFAULT NULL,
@@ -599,11 +583,18 @@ CREATE TABLE IF NOT EXISTS `ucg` (
   `laa_flow` float(10,5) DEFAULT NULL,
   `sec4grades` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`ucg_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.ucg: ~0 rows (約) のデータをダンプしています
-/*!40000 ALTER TABLE `ucg` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ucg` ENABLE KEYS */;
+-- Data exporting was unselected.
+
+-- Dumping structure for view abldb.patient_list
+DROP VIEW IF EXISTS `patient_list`;
+-- Removing temporary table and create final VIEW structure
+DROP TABLE IF EXISTS `patient_list`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `patient_list` AS SELECT `patients`.`patient_serial_number`, `first_ablation`.`first_ablation_id`, `first_ablation`.`internal_medicine_id`
+FROM `patients`
+LEFT JOIN `first_ablation`
+	ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number` ;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
