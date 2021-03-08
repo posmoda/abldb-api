@@ -19,7 +19,7 @@ class Database:
         self.dbh.commit()
 
     def query(self, stmt, *args, **kwargs):
-        print(id(self))
+        #print(id(self))
         self._open()
         print( 'STMT is ' + stmt )
         if kwargs.get('prepared', False):
@@ -175,7 +175,10 @@ def hello_world():
 def list_patients():
     db = Database(**dns)
     #cursor = get_cursor()
-    query = '''SELECT * FROM patient_list;'''
+    query = '''
+        SELECT * FROM patient_list
+            ORDER BY `patient_serial_number`;
+    '''
     #cursor.execute( query )
     #patients_list = cursor.fetchall()
     patients_list = db.query( query )
@@ -183,7 +186,8 @@ def list_patients():
         pt_number = row['patient_serial_number']
         query_follow_abl = f'''
             SELECT `following_ablation_id` FROM `following_ablation`
-                WHERE `patient_serial_number` = { pt_number };
+                WHERE `patient_serial_number` = { pt_number }
+                ORDER BY `date`;
         '''
         #cursor.execute( query_follow_abl )
         #res_follow_abl = cursor.fetchall()
@@ -207,6 +211,7 @@ def give_a_patient(patient_serial_number):
     query_follow_abl = f'''
         SELECT `following_ablation_id` FROM `following_ablation`
             WHERE `patient_serial_number` = { patient_serial_number }
+            ORDER BY `date`;
     '''
     #cursor.execute( query_follow_abl )
     #res_follow_abl = cursor.fetchall()
