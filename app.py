@@ -167,11 +167,13 @@ def create_new_medicine():
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/')
+root_dir = ('/abldb-api')
+
+@app.route(root_dir)
 def hello_world():
     return '<html><body><p>It works.</p></body></html>'
 
-@app.route('/api/patients', methods=['GET'])
+@app.route(root_dir + '/patients', methods=['GET'])
 def list_patients():
     db = Database(**dns)
     #cursor = get_cursor()
@@ -197,7 +199,7 @@ def list_patients():
     patients_list = list( map( format_data_to_cast, patients_list ) )
     return jsonify( patients_list )
 
-@app.route('/api/patients/<int:patient_serial_number>', methods=['GET'])
+@app.route(root_dir + '/patients/<int:patient_serial_number>', methods=['GET'])
 def give_a_patient(patient_serial_number):
     db = Database(**dns)
     #cursor = get_cursor()
@@ -220,7 +222,7 @@ def give_a_patient(patient_serial_number):
     #cursor.close
     return jsonify( format_data_to_cast( patient ) )
 
-@app.route('/api/baseline/new', methods=['GET'])
+@app.route(root_dir + '/baseline/new', methods=['GET'])
 def get_new_pt_number():
     db = Database(**dns)
     header = request.headers.get("Authorization")
@@ -251,7 +253,7 @@ def get_new_pt_number():
     db.query( query )
     return str( patient_id )
 
-@app.route('/api/baseline/<int:patient_serial_number>', methods=['GET'])
+@app.route(root_dir + '/baseline/<int:patient_serial_number>', methods=['GET'])
 def give_baseline_data(patient_serial_number):
     db = Database(**dns)
     #cursor = get_cursor()
@@ -266,7 +268,7 @@ def give_baseline_data(patient_serial_number):
     #print( format_data_to_cast( baseline ) )
     return jsonify( format_data_to_cast( baseline ))
 
-@app.route('/api/baseline/<int:patient_serial_number>', methods=['POST'])
+@app.route(root_dir + '/baseline/<int:patient_serial_number>', methods=['POST'])
 def update_baseline_data(patient_serial_number):
     db = Database(**dns)
     baseline_data = format_data_to_insert( request.json )
@@ -283,7 +285,7 @@ def update_baseline_data(patient_serial_number):
     #cursor.close()
     return "ok"
 
-@app.route('/api/ucg/new', methods=['GET'])
+@app.route(root_dir + '/ucg/new', methods=['GET'])
 def get_new_ucg_number():
     db = Database(**dns)
     query = '''
@@ -301,7 +303,7 @@ def get_new_ucg_number():
     #print( new_id )
     return jsonify( new_id )
 
-@app.route('/api/ucg/<int:ucg_id>', methods=['GET'])
+@app.route(root_dir + '/ucg/<int:ucg_id>', methods=['GET'])
 def give_ucg_data(ucg_id):
     db = Database(**dns)
     query = f'''
@@ -316,7 +318,7 @@ def give_ucg_data(ucg_id):
     ucg = db.query( query )[0]
     return jsonify( format_data_to_cast( ucg ) )
 
-@app.route('/api/ucg/<int:ucg_id>', methods=['POST'])
+@app.route(root_dir + '/ucg/<int:ucg_id>', methods=['POST'])
 def update_ucg_data(ucg_id):
     db = Database(**dns)
     ucg_data = format_data_to_insert( request.json )
@@ -333,7 +335,7 @@ def update_ucg_data(ucg_id):
     db.query( query )
     return "ok"
 
-@app.route('/api/1st-abl/<int:patient_serial_number>', methods=['GET'])
+@app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['GET'])
 def give_first_abl_data(patient_serial_number):
     db = Database(**dns)
     q_data = f'''
@@ -364,7 +366,7 @@ def give_first_abl_data(patient_serial_number):
     #cursor.close()
     return jsonify( format_data_to_cast( abl_data ) )
 
-@app.route('/api/1st-abl/<int:patient_serial_number>', methods=['POST'])
+@app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['POST'])
 def update_first_abl_data(patient_serial_number):
     db = Database(**dns)
     abl_data = format_data_to_insert( request.json )
@@ -381,7 +383,7 @@ def update_first_abl_data(patient_serial_number):
     db.query( query )
     return 'First ablation update: SUCCESS'
 
-@app.route('/api/1st-abl/<int:first_abl_id>/medication_id', methods=['GET'])
+@app.route(root_dir + '/1st-abl/<int:first_abl_id>/medication_id', methods=['GET'])
 def give_med_id_for_first_abl(first_abl_id):
     db = Database(**dns)
     query = f'''
@@ -413,7 +415,7 @@ def give_med_id_for_first_abl(first_abl_id):
     #cursor.close()
     return jsonify(medicine_id)
 
-@app.route('/api/medication/<int:medication_id>', methods=['GET'])
+@app.route(root_dir + '/medication/<int:medication_id>', methods=['GET'])
 def give_medication_data(medication_id):
     db = Database(**dns)
     query = f'''
@@ -427,7 +429,7 @@ def give_medication_data(medication_id):
     medication_data = db.query( query )[0]
     return jsonify( format_data_to_cast( medication_data ) )
 
-@app.route('/api/medication/<int:medication_id>', methods=['POST'])
+@app.route(root_dir + '/medication/<int:medication_id>', methods=['POST'])
 def update_medication_data(medication_id):
     db = Database(**dns)
     medication_data = format_data_to_insert( request.json )
@@ -443,7 +445,7 @@ def update_medication_data(medication_id):
     db.query( query )
     return "ok"
 
-@app.route('/api/following_ablation/new/<int:patient_serial_number>', methods=['GET'])
+@app.route(root_dir + '/following_ablation/new/<int:patient_serial_number>', methods=['GET'])
 def get_new_follow_ablation_number(patient_serial_number):
     db = Database(**dns)
     query = f'''
@@ -472,7 +474,7 @@ def get_new_follow_ablation_number(patient_serial_number):
     db.query( query )
     return jsonify( follow_ablation_id )
 
-@app.route('/api/following_ablation/<int:following_ablation_id>', methods=['GET'])
+@app.route(root_dir + '/following_ablation/<int:following_ablation_id>', methods=['GET'])
 def give_following_ablation_data(following_ablation_id):
     db = Database(**dns)
     query = f'''
@@ -487,7 +489,7 @@ def give_following_ablation_data(following_ablation_id):
     follow_ablation = db.query( query )[0]
     return jsonify( format_data_to_cast( follow_ablation ) )
 
-@app.route('/api/following_ablation/<int:following_ablation_id>', methods=['POST'])
+@app.route(root_dir + '/following_ablation/<int:following_ablation_id>', methods=['POST'])
 def update_following_ablation_data(following_ablation_id):
     db = Database(**dns)
     following_ablation_data = format_data_to_insert( request.json )
