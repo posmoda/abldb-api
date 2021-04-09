@@ -524,19 +524,10 @@ def give_followup_data(patient_serial_number):
         follow_up_data = db.query(q_data)[0]
     else:
         follow_up_data = result[0]
-    return jsonify( format_data_to_cast( follow_up_data ) )
+    return jsonify( format_date_to_cast( follow_up_data ) )
 
-@app.route(root_dir + '/followup/<int:patient_serial_number>', methods=['POST'])
-def update_folloup_data(patient_serial_number):
-    db = Database(**dns)
-    follow_up_data = format_data_to_insert( request.json )
-    query = f'''
-        UPDATE `follow_up`
-            SET { follow_up_data }
-        WHERE `patient_serial_number` = { patient_serial_number };
-    '''
-    db.query( query )
-    return 'Follow up update: SUCESS'
+
+
 
 if __name__ == '__main__':
     app.run( threaded=True, debug=True )

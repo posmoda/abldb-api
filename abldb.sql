@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS `first_ablation` (
   KEY `fk_firstab_med_idx` (`internal_medicine_id`),
   CONSTRAINT `fk_firstab_med` FOREIGN KEY (`internal_medicine_id`) REFERENCES `internal_medicine` (`internal_medicine_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_firstab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- エクスポートするデータが選択されていません
 
@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS `following_ablation` (
   CONSTRAINT `fk_followab_med` FOREIGN KEY (`internal_medicine_id`) REFERENCES `internal_medicine` (`internal_medicine_id`),
   CONSTRAINT `fk_followab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_followab_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- エクスポートするデータが選択されていません
 
@@ -264,117 +264,67 @@ DROP TABLE IF EXISTS `follow_up`;
 CREATE TABLE IF NOT EXISTS `follow_up` (
   `follow_up_id` int(11) NOT NULL AUTO_INCREMENT,
   `patient_serial_number` int(11) NOT NULL,
-  `date` date NOT NULL,
-  `ucg_id` int(11) DEFAULT NULL,
-  `recurrence_id` int(11) DEFAULT NULL,
-  `oac` bit(1) DEFAULT NULL,
-  `stopped_oac` bit(1) DEFAULT NULL,
-  `stopped_oac_date` date DEFAULT NULL,
-  `restarted_oac` bit(1) DEFAULT NULL,
-  `restarted_oac_date` date DEFAULT NULL,
-  `antiarrhythmia` bit(1) DEFAULT NULL,
-  `stopped_antiarrhythmia` bit(1) DEFAULT NULL,
-  `stopped_antiarrhythmia_date` date DEFAULT NULL,
-  `restarted_antiarrhythmia` bit(1) DEFAULT NULL,
-  `restarted_antiarrhythmia_date` date DEFAULT NULL,
-  `follow_up_ct_date` date DEFAULT NULL,
+  `af_in_three_months` bit(1) DEFAULT NULL,
+  `af_in_three_months_kind` varchar(50) DEFAULT NULL,
+  `af_in_three_monhs_date` date DEFAULT NULL,
+  `af_after_three_months` bit(1) DEFAULT NULL,
+  `af_after_three_months_kind` varchar(50) DEFAULT NULL,
+  `af_after_three_months_date` date DEFAULT NULL,
+  `af_antiarrhythmic` bit(1) DEFAULT NULL,
+  `af_antiarrhythmic_still_af` bit(1) DEFAULT NULL,
+  `af_ninety_days_after_second` bit(1) DEFAULT NULL,
+  `af_ninety_days_after_second_date` date DEFAULT NULL,
+  `af_after_second_kind` varchar(50) DEFAULT NULL,
+  `af_after_second_antiarrhythmic` bit(1) DEFAULT NULL,
+  `af_after_second_antiarrhythmic_start` bit(1) DEFAULT NULL,
+  `af_after_second_antiarrhythmic_still_af` bit(1) DEFAULT NULL,
+  `af_final_status_kind` varchar(50) DEFAULT NULL,
+  `oac_final_follow` bit(1) DEFAULT NULL,
+  `oac_off_after_final_session` bit(1) DEFAULT NULL,
+  `oac_off_after_final_session_date` date DEFAULT NULL,
+  `oac_restart_after_final_session` bit(1) DEFAULT NULL,
+  `oac_re_off_after_final_session_date` date DEFAULT NULL,
+  `oac_restart_after_final_session_date` date DEFAULT NULL,
+  `anti_arrhythmic_final_follow` bit(1) DEFAULT NULL,
+  `anti_arrhythmic_after_final_session_off_date` date DEFAULT NULL,
+  `anti_arrhythmic_after_final_session_start_date` date DEFAULT NULL,
+  `anti_arrhythmic_after_final_session_re_off_date` date DEFAULT NULL,
+  `anti_arrhythmic_after_final_session_restart_date` date DEFAULT NULL,
+  `pvct` bit(1) DEFAULT NULL,
+  `ct_date` date DEFAULT NULL,
   `pv_stenosis` bit(1) DEFAULT NULL,
-  `death_reason` varchar(50) DEFAULT NULL,
-  `death_reason_detail` varchar(255) DEFAULT NULL,
-  `death_date` date DEFAULT NULL,
-  `hospital_date_by_heart_failure` date DEFAULT NULL,
-  `tia_upset_date` date DEFAULT NULL,
-  `death_by_tia` bit(1) DEFAULT NULL,
-  `kind_of_tia` varchar(45) DEFAULT NULL,
-  `rankin_scale` int(11) DEFAULT NULL,
-  `oac_on_tia` int(11) DEFAULT NULL,
-  `apt_on_tia` bit(1) DEFAULT NULL,
-  `pt_inr_on_tia` double(10,5) DEFAULT NULL,
-  `aptt_on_tia` double(10,5) DEFAULT NULL,
-  `oac_after_tia` bit(1) DEFAULT NULL,
-  `tia_comment` varchar(255) DEFAULT NULL,
-  `systemic_embolus` bit(1) DEFAULT NULL,
+  `heart_failure` bit(1) DEFAULT NULL,
+  `heart_failoure_admission_date` date DEFAULT NULL,
+  `cerebral_infarction` bit(1) DEFAULT NULL,
+  `cerebral_infarction_date` date DEFAULT NULL,
+  `cerebral_infarction_comment` varchar(50) DEFAULT NULL,
+  `embolus` bit(1) DEFAULT NULL,
   `embolus_part` varchar(50) DEFAULT NULL,
-  `embolus_upset_date` date DEFAULT NULL,
-  `death_by_embolus` bit(1) DEFAULT NULL,
-  `oac_on_embolus` int(11) DEFAULT NULL,
-  `apt_on_embolus` bit(1) DEFAULT NULL,
-  `pt_inr_on_embolus` double(10,5) DEFAULT NULL,
-  `aptt_on_embolus` double(10,5) DEFAULT NULL,
-  `oac_after_embolus` bit(1) DEFAULT NULL,
-  `isth_bleeding` bit(1) DEFAULT NULL,
-  `progrematic_breeding` bit(1) DEFAULT NULL,
-  `head_bleeding` bit(1) DEFAULT NULL,
-  `head_bleeding_date` date DEFAULT NULL,
-  `kumomaku_bleeding` bit(1) DEFAULT NULL,
-  `acute_subdural_hematoma` bit(1) DEFAULT NULL,
-  `chronic_subdural_hematoma` bit(1) DEFAULT NULL,
-  `other_head_bleeding` bit(1) DEFAULT NULL,
-  `ope_for_head_bleeding` bit(1) DEFAULT NULL,
-  `transfusion_for_head_bleeding` bit(1) DEFAULT NULL,
-  `death_by_head_bleeding` bit(1) DEFAULT NULL,
-  `sequelae_by_head_bleeding` int(11) DEFAULT NULL,
-  `oac_on_head_bleeding` int(11) DEFAULT NULL,
-  `apt_on_head_bleeding` bit(1) DEFAULT NULL,
-  `pt_inr_on_head_bleeding` double(10,5) DEFAULT NULL,
-  `aptt_on_head_bleeding` double(10,5) DEFAULT NULL,
-  `oac_after_head_bleeding` bit(1) DEFAULT NULL,
-  `gastro_bleeding` bit(1) DEFAULT NULL,
-  `gastro_bleeding_date` date DEFAULT NULL,
-  `gastro_bleeding_low_hb` bit(1) DEFAULT NULL,
-  `ope_for_gastro_bleeding` bit(1) DEFAULT NULL,
-  `transfusion_for_gastro_bleeding` bit(1) DEFAULT NULL,
-  `oac_on_gastro_bleeding` int(11) DEFAULT NULL,
-  `apt_on_gastro_bleeding` bit(1) DEFAULT NULL,
-  `pt_inr_on_gastro_bleeding` double(10,5) DEFAULT NULL,
-  `aptt_on_gastro_bleeding` double(10,5) DEFAULT NULL,
-  `oac_after_gastro_bleeding` bit(1) DEFAULT NULL,
-  `other_bleeding` bit(1) DEFAULT NULL,
-  `other_bleeding_part` varchar(45) DEFAULT NULL,
-  `other_bleeding_date` date DEFAULT NULL,
-  `other_bleeding_low_hb` double(10,5) DEFAULT NULL,
-  `ope_for_other_bleeding` bit(1) DEFAULT NULL,
-  `transfusion_for_other_bleeding` bit(1) DEFAULT NULL,
-  `death_by_other_bleeding` bit(1) DEFAULT NULL,
-  `oac_on_other_bleeding` int(11) DEFAULT NULL,
-  `apt_on_other_bleeding` bit(1) DEFAULT NULL,
-  `pt_int_on_other_bleeding` double(10,5) DEFAULT NULL,
-  `aptt_on_other_bleeding` double(10,5) DEFAULT NULL,
-  `oac_after_other_bleeding` bit(1) DEFAULT NULL,
-  `device_implantation` bit(1) DEFAULT NULL,
-  `device_date` date DEFAULT NULL,
-  `pm` bit(1) DEFAULT NULL,
-  `icd` bit(1) DEFAULT NULL,
-  `crtp` bit(1) DEFAULT NULL,
-  `crtd` bit(1) DEFAULT NULL,
-  `loop_recorder` bit(1) DEFAULT NULL,
-  `sss` bit(1) DEFAULT NULL,
-  `avb` bit(1) DEFAULT NULL,
-  `avn` bit(1) DEFAULT NULL,
-  `hypocardiac` bit(1) DEFAULT NULL,
-  `vt_vf` bit(1) DEFAULT NULL,
-  `ami` bit(1) DEFAULT NULL,
-  `ami_date` date DEFAULT NULL,
-  `death_by_ami` bit(1) DEFAULT NULL,
-  `oac_on_ami` int(11) DEFAULT NULL,
-  `apt_on_ami` bit(1) DEFAULT NULL,
+  `embolus_date` date DEFAULT NULL,
+  `bleeding` bit(1) DEFAULT NULL,
+  `bleeding_date` date DEFAULT NULL,
+  `bleeding_detail` varchar(50) DEFAULT NULL,
+  `isth` bit(1) DEFAULT NULL,
+  `head_bleed` bit(1) DEFAULT NULL,
+  `head_bleed_date` date DEFAULT NULL,
+  `gastro_bleed` bit(1) DEFAULT NULL,
+  `gastro_bleed_date` date DEFAULT NULL,
+  `death` varchar(50) DEFAULT NULL,
+  `death_detail` varchar(50) DEFAULT NULL,
+  `death_date` date DEFAULT NULL,
+  `new_device` varchar(50) DEFAULT NULL,
+  `new_device_date` date DEFAULT NULL,
   `pci` bit(1) DEFAULT NULL,
   `pci_date` date DEFAULT NULL,
-  `pci_cabg` bit(1) DEFAULT NULL,
-  `pci_cabg_date` date DEFAULT NULL,
-  `other_ope_on_heart` bit(1) DEFAULT NULL,
-  `other_ope_on_heart_date` date DEFAULT NULL,
-  `hospitalize_for_heart` bit(1) DEFAULT NULL,
-  `hospitalize_for_heart_date` date DEFAULT NULL,
-  `end_of_consultation` bit(1) DEFAULT NULL,
-  `home_doctor` varchar(45) DEFAULT NULL,
+  `cabg` bit(1) DEFAULT NULL,
+  `cabg_date` date DEFAULT NULL,
+  `heart_ope` bit(1) DEFAULT NULL,
+  `heart_ope_date` date DEFAULT NULL,
+  `last_date` date DEFAULT NULL,
+  `primary_doctor` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`follow_up_id`),
-  KEY `fk_followup_pt_idx` (`patient_serial_number`),
-  KEY `fk_followup_ucg_idx` (`ucg_id`),
-  KEY `fk_followup_recurrence_idx` (`recurrence_id`),
-  CONSTRAINT `fk_followup_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_followup_recurrence` FOREIGN KEY (`recurrence_id`) REFERENCES `recurrence` (`recurrence_id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `fk_followup_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `FK_patients_followup` (`patient_serial_number`),
+  CONSTRAINT `FK_patients_followup` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- エクスポートするデータが選択されていません
@@ -478,7 +428,7 @@ CREATE TABLE IF NOT EXISTS `internal_medicine` (
   `nsaids` bit(1) DEFAULT NULL,
   `steroid` bit(1) DEFAULT NULL,
   PRIMARY KEY (`internal_medicine_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- エクスポートするデータが選択されていません
 
@@ -565,7 +515,7 @@ CREATE TABLE IF NOT EXISTS `patients` (
   KEY `fk_pt_ucg_idx` (`ucg_id`),
   CONSTRAINT `fk_pt_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`),
   CONSTRAINT `pt_hospital_id` FOREIGN KEY (`hospital_id`) REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- エクスポートするデータが選択されていません
 
@@ -575,7 +525,8 @@ DROP VIEW IF EXISTS `patient_list`;
 CREATE TABLE `patient_list` (
 	`patient_serial_number` INT(11) NOT NULL,
 	`first_ablation_id` INT(11) NULL,
-	`internal_medicine_id` INT(11) NULL
+	`internal_medicine_id` INT(11) NULL,
+	`follow_up_id` INT(11) NULL
 ) ENGINE=MyISAM;
 
 --  テーブル abldb.recurrence の構造をダンプしています
@@ -625,7 +576,7 @@ CREATE TABLE IF NOT EXISTS `ucg` (
   `laa_flow` float(10,5) DEFAULT NULL,
   `sec4grades` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`ucg_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- エクスポートするデータが選択されていません
 
@@ -633,10 +584,12 @@ CREATE TABLE IF NOT EXISTS `ucg` (
 DROP VIEW IF EXISTS `patient_list`;
 -- 一時テーブルを削除して、最終的な VIEW 構造を作成
 DROP TABLE IF EXISTS `patient_list`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `patient_list` AS SELECT `patients`.`patient_serial_number`, `first_ablation`.`first_ablation_id`, `first_ablation`.`internal_medicine_id`
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `patient_list` AS SELECT `patients`.`patient_serial_number`, `first_ablation`.`first_ablation_id`, `first_ablation`.`internal_medicine_id`, `follow_up`.`follow_up_id`
 FROM `patients`
 LEFT JOIN `first_ablation`
-	ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number` ;
+	ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number`
+LEFT JOIN `follow_up`
+	ON `patients`.`patient_serial_number` = `follow_up`.`patient_serial_number` ;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
