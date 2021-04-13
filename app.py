@@ -28,7 +28,7 @@ class Database:
         else:
             cursor = self.dbh.cursor(dictionary=True, buffered=True)
             cursor.execute(stmt)
-        if 'INSERT' in stmt or 'UPDATE' in stmt:
+        if 'INSERT' in stmt or 'UPDATE' in stmt or 'DELETE' in stmt:
             self._commit()
             data = None
         else:
@@ -55,7 +55,6 @@ dns = {
 
 #dns = {
 #        'user': 'abldb',
-#        'host': 'localhost',
 #        'password': 'CC#x-#hW/p?R@SMe',
 #        'database': 'abldb'
 #        }
@@ -507,15 +506,16 @@ def give_following_ablation_data(following_ablation_id):
 def update_following_ablation_data(following_ablation_id):
     db = Database(**dns)
     following_ablation_data = format_data_to_insert( request.json )
-    if following_ablation_data['order'] == 'delete':
-        delete_following_ablation(following_ablation_id)
-        return 'ok'
-
-    query = f'''
-        UPDATE `following_ablation`
-            SET { following_ablation_data }
-        WHERE `following_ablation_id` = { following_ablation_id };
-    '''
+    if request.json.get('order') == 'delete':
+        query = f'''
+            DELETE FROM `following_ablation` WHERE `following_ablation_id` = { following_ablation_id };
+        '''
+    else:
+        query = f'''
+            UPDATE `following_ablation`
+                SET { following_ablation_data }
+            WHERE `following_ablation_id` = { following_ablation_id };
+        '''
     #cursor = get_cursor()
     #cursor.execute( query )
     #connection.commit()
