@@ -164,6 +164,12 @@ def create_new_medicine():
     #cursor.close()
     return new_id
 
+def delete_following_ablation(abl_id):
+    db = Database(**dns)
+    query = '''
+        DELETE FROM `following_ablation` WHERE `following_ablation_id` = { abl_id };
+    '''
+
 app = Flask(__name__)
 CORS(app)
 
