@@ -52,6 +52,13 @@ dns = {
         'password': 'utq0975e',
         'database': 'abldb'
         }
+
+#dns = {
+#        'user': 'abldb',
+#        'host': 'localhost',
+#        'password': 'CC#x-#hW/p?R@SMe',
+#        'database': 'abldb'
+#        }
 #db = Database(**dns)
 
 def get_cursor():
@@ -500,6 +507,10 @@ def give_following_ablation_data(following_ablation_id):
 def update_following_ablation_data(following_ablation_id):
     db = Database(**dns)
     following_ablation_data = format_data_to_insert( request.json )
+    if following_ablation_data['order'] == 'delete':
+        delete_following_ablation(following_ablation_id)
+        return 'ok'
+
     query = f'''
         UPDATE `following_ablation`
             SET { following_ablation_data }
