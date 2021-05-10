@@ -1,7 +1,7 @@
 import mariadb
 import re
 import hashlib
-import randam, string
+import random, string
 from datetime import date, datetime
 from flask import *
 from flask_cors import CORS
@@ -62,7 +62,7 @@ dns = {
 #        }
 #db = Database(**dns)
 def random_string(n):
-    return ''.join(randam.choices(string.ascii_letters + string.digits, k=n))
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
 
 def get_cursor():
     connection = mariadb.connect(
@@ -122,7 +122,7 @@ def format_value(value):
     elif value == True:
         return "\'b\'1"
     elif  value == False:
-        return"\'b\'0"
+        return "\'b\'0"
     else:
         return f"\'{str( value )}\'"
 
@@ -193,31 +193,32 @@ def hello_world():
 @app.route(root_dir + '/login', methods=['POST'])
 def authenticate_user():
     db = Database(**dns)
-    request = request.json
-    if request['order'] == 'salt':
+    login_request = request.json
+    if login_request['order'] == 'salt':
         query = f'''
             SELECT `salt` FROM `users`
-                WHERE `user_id` = { request['user'] };
+                WHERE `user_id` = "{ login_request['user'] }";
         '''
         result = db.query( query )
         if len(result) == 0:
             return jsonify({'salt': random_string(64) }), 200
         else:
             return jsonify({'salt': result[0]['salt']}), 200
-    elif request['order'] == 'auth':
-        user_id = request['user']
-        user_salt = request['userSalt']
-        challenge_hash = request['challengeHash']
+    elif login_request['order'] == 'auth':
+        user_id = login_request['user']
+        user_salt = login_request['userSalt']
+        challenge_hash = login_request['challengeHash']
         query = f'''
-            SELECT LOWER(HEX(`password_hash`)) AS password_hash FROM `users`
-                WHERE `user_id` = { user_id };
+            SELECT LOWER(`password_hash`) AS password_hash FROM `users`
+                WHERE `user_id` = "{ user_id }";
         '''
         result = db.query( query )
-        if len(result) == 0;
+        if len(result) == 0:
             return 404
         else:
             password_hash = result[0]['password_hash']
-            response_hash = hashlib.sha256(password_hash + user_salt.encode()).hexdigest()
+            print( password_hash )
+            response_hash = hashlib.sha256(password_hash + user_salt.encode('utf-8')).hexdigest()
             if challenge_hash == response_hash:
                 token = random_string(64)
                 return jsonify({'token': token})
