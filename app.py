@@ -180,6 +180,18 @@ def delete_following_ablation(abl_id):
         DELETE FROM `following_ablation` WHERE `following_ablation_id` = { abl_id };
     '''
 
+def check_token(token):
+    query = f'''
+        SELECT * FROM logins
+            WHERE `token` = '{logins_request['token']}'
+                AND `is_logged_out` = b'0';
+    '''
+    result = db.query( query )[0]
+    if result is None:
+        return False
+    elif:
+        return True
+
 app = Flask(__name__)
 CORS(app)
 
@@ -209,21 +221,49 @@ def authenticate_user():
         user_salt = login_request['userSalt']
         challenge_hash = login_request['challengeHash']
         query = f'''
-            SELECT LOWER(`password_hash`) AS password_hash FROM `users`
+            SELECT cast(`password_hash` as char) AS password_hash FROM `users`
                 WHERE `user_id` = "{ user_id }";
         '''
         result = db.query( query )
         if len(result) == 0:
-            return 404
+            return 'Invalid', 404
         else:
             password_hash = result[0]['password_hash']
-            print( password_hash )
-            response_hash = hashlib.sha256(password_hash + user_salt.encode('utf-8')).hexdigest()
+            hash_seed = password_hash + user_salt
+            response_hash = hashlib.sha256(hash_seed.encode('UTF-8')).hexdigest()
             if challenge_hash == response_hash:
                 token = random_string(64)
+                #print( token )
+                query = f'''
+                    INSERT INTO `logins`
+                        ( `user_id`, `token` )
+                    VALUES ( '{user_id}', '{token}' );
+                '''
+                db.query( query )
                 return jsonify({'token': token})
             else:
-                return 404
+                return 'Invalid', 404
+    elif login_request['order'] == 'token':
+        query = f'''
+            SELECT * FROM logins
+                WHERE `token` = '{logins_request['token']}';
+        '''
+        result = db.query( query )[0]
+        if result is None:
+            return 'Invalid', 404
+        elif:
+            return 'ok', 200
+    elif login_request['order'] == 'logout':
+        token = login_request['token']
+        if check_token( token ):
+            query = f'''
+                UPDATE `logins`
+                    SET `is_logged_out` = b'1'
+                WHERE `token` = '{token}';
+            '''
+            return 'ok', 200
+        else:
+            return 'Invalid', 404
 
 
 
