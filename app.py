@@ -5,6 +5,7 @@ import random, string
 from datetime import date, datetime
 from flask import *
 from flask_cors import CORS
+from functools import wraps
 
 class Database:
     def __init__(self, **dns):
@@ -181,24 +182,47 @@ def delete_following_ablation(abl_id):
     '''
 
 def check_token(token):
+    db = Database(**dns)
     query = f'''
         SELECT * FROM logins
-            WHERE `token` = '{logins_request['token']}'
+            WHERE `token` = '{ token }'
                 AND `is_logged_out` = b'0';
     '''
     result = db.query( query )[0]
     if result is None:
         return False
-    elif:
-        return True
+    else:
+        return result[ 'user_id' ]
 
 app = Flask(__name__)
 CORS(app)
+
+def test1(f):
+    def test2(*args, **kwargs):
+        print( 'this is test 1' )
+        return f(*args, *kwargs)
+    return test2
+
+def token_gate(func):
+    @wraps( func )
+    def query_token( *args, **kwargs ):
+        token_header = request.headers.get( "Authorization" )
+        if token_header == None:
+            return jsonify({ 'error': 'Token invalid' }), 403
+        token = token_header.split()[1]
+        logined_user = check_token( token )
+        if logined_user:
+            return func( *args, **kwargs )
+        else:
+            return jsonify({ 'error': 'Token invalid' }), 403
+    return query_token
+
 
 #root_dir = ('/abldb-api')
 root_dir = ('/api')
 
 @app.route(root_dir)
+@test1
 def hello_world():
     return '<html><body><p>It works.</p></body></html>'
 
@@ -240,7 +264,21 @@ def authenticate_user():
                     VALUES ( '{user_id}', '{token}' );
                 '''
                 db.query( query )
-                return jsonify({'token': token})
+                query_hospital_id = f'''
+                    SELECT `hospital_id` FROM `users`
+                        WHERE `user_id` = '{ user_id }';
+                    '''
+                hospital_id = db.query( query_hospital_id )[0]['hospital_id']
+                query_hospital_name = f'''
+                    SELECT `hospital_name` FROM `hospital`
+                        WHERE hospital_id = { hospital_id }
+                '''
+                hospital_name = db.query( query_hospital_name )[0][ 'hospital_name' ]
+                return jsonify({
+                    'user_id': user_id,
+                    'hospital': hospital_name,
+                    'token': token
+                })
             else:
                 return 'Invalid', 404
     elif login_request['order'] == 'token':
@@ -251,7 +289,7 @@ def authenticate_user():
         result = db.query( query )[0]
         if result is None:
             return 'Invalid', 404
-        elif:
+        else:
             return 'ok', 200
     elif login_request['order'] == 'logout':
         token = login_request['token']
@@ -269,6 +307,7 @@ def authenticate_user():
 
 
 @app.route(root_dir + '/patients', methods=['GET'])
+@token_gate
 def list_patients():
     db = Database(**dns)
     #cursor = get_cursor()
@@ -295,6 +334,7 @@ def list_patients():
     return jsonify( patients_list )
 
 @app.route(root_dir + '/patients/<int:patient_serial_number>', methods=['GET'])
+@token_gate
 def give_a_patient(patient_serial_number):
     db = Database(**dns)
     #cursor = get_cursor()
@@ -318,15 +358,16 @@ def give_a_patient(patient_serial_number):
     return jsonify( format_data_to_cast( patient ) )
 
 @app.route(root_dir + '/baseline/new', methods=['GET'])
+@token_gate
 def get_new_pt_number():
     db = Database(**dns)
     header = request.headers.get("Authorization")
     _,token = header.split()
-    user_id = validiate_token(token)
+    user_id = check_token(token)
     query = f'''
         INSERT INTO `patients` 
             (`registered_by`)
-        VALUES ({user_id});
+        VALUES ('{user_id}';
     '''
     #cursor = get_cursor()
     #cursor.execute( query )
@@ -349,6 +390,7 @@ def get_new_pt_number():
     return str( patient_id )
 
 @app.route(root_dir + '/baseline/<int:patient_serial_number>', methods=['GET'])
+@token_gate
 def give_baseline_data(patient_serial_number):
     db = Database(**dns)
     #cursor = get_cursor()
@@ -364,6 +406,7 @@ def give_baseline_data(patient_serial_number):
     return jsonify( format_data_to_cast( baseline ))
 
 @app.route(root_dir + '/baseline/<int:patient_serial_number>', methods=['POST'])
+@token_gate
 def update_baseline_data(patient_serial_number):
     db = Database(**dns)
     baseline_data = format_data_to_insert( request.json )
@@ -381,6 +424,7 @@ def update_baseline_data(patient_serial_number):
     return "ok"
 
 @app.route(root_dir + '/ucg/new', methods=['GET'])
+@token_gate
 def get_new_ucg_number():
     db = Database(**dns)
     query = '''
@@ -399,6 +443,7 @@ def get_new_ucg_number():
     return jsonify( new_id )
 
 @app.route(root_dir + '/ucg/<int:ucg_id>', methods=['GET'])
+@token_gate
 def give_ucg_data(ucg_id):
     db = Database(**dns)
     query = f'''
@@ -414,6 +459,7 @@ def give_ucg_data(ucg_id):
     return jsonify( format_data_to_cast( ucg ) )
 
 @app.route(root_dir + '/ucg/<int:ucg_id>', methods=['POST'])
+@token_gate
 def update_ucg_data(ucg_id):
     db = Database(**dns)
     ucg_data = format_data_to_insert( request.json )
@@ -431,6 +477,7 @@ def update_ucg_data(ucg_id):
     return "ok"
 
 @app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['GET'])
+@token_gate
 def give_first_abl_data(patient_serial_number):
     db = Database(**dns)
     q_data = f'''
@@ -462,6 +509,7 @@ def give_first_abl_data(patient_serial_number):
     return jsonify( format_data_to_cast( abl_data ) )
 
 @app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['POST'])
+@token_gate
 def update_first_abl_data(patient_serial_number):
     db = Database(**dns)
     abl_data = format_data_to_insert( request.json )
@@ -479,6 +527,7 @@ def update_first_abl_data(patient_serial_number):
     return 'First ablation update: SUCCESS'
 
 @app.route(root_dir + '/1st-abl/<int:first_abl_id>/medication_id', methods=['GET'])
+@token_gate
 def give_med_id_for_first_abl(first_abl_id):
     db = Database(**dns)
     query = f'''
@@ -511,6 +560,7 @@ def give_med_id_for_first_abl(first_abl_id):
     return jsonify(medicine_id)
 
 @app.route(root_dir + '/medication/<int:medication_id>', methods=['GET'])
+@token_gate
 def give_medication_data(medication_id):
     db = Database(**dns)
     query = f'''
@@ -525,6 +575,7 @@ def give_medication_data(medication_id):
     return jsonify( format_data_to_cast( medication_data ) )
 
 @app.route(root_dir + '/medication/<int:medication_id>', methods=['POST'])
+@token_gate
 def update_medication_data(medication_id):
     db = Database(**dns)
     medication_data = format_data_to_insert( request.json )
@@ -541,6 +592,7 @@ def update_medication_data(medication_id):
     return "ok"
 
 @app.route(root_dir + '/following_ablation/new/<int:patient_serial_number>', methods=['GET'])
+@token_gate
 def get_new_follow_ablation_number(patient_serial_number):
     db = Database(**dns)
     query = f'''
@@ -570,6 +622,7 @@ def get_new_follow_ablation_number(patient_serial_number):
     return jsonify( follow_ablation_id )
 
 @app.route(root_dir + '/following_ablation/<int:following_ablation_id>', methods=['GET'])
+@token_gate
 def give_following_ablation_data(following_ablation_id):
     db = Database(**dns)
     query = f'''
@@ -585,6 +638,7 @@ def give_following_ablation_data(following_ablation_id):
     return jsonify( format_data_to_cast( follow_ablation ) )
 
 @app.route(root_dir + '/following_ablation/<int:following_ablation_id>', methods=['POST'])
+@token_gate
 def update_following_ablation_data(following_ablation_id):
     db = Database(**dns)
     following_ablation_data = format_data_to_insert( request.json )
@@ -606,6 +660,7 @@ def update_following_ablation_data(following_ablation_id):
     return "ok"
 
 @app.route(root_dir + '/followup/<int:patient_serial_number>', methods=['GET'])
+@token_gate
 def give_followup_data(patient_serial_number):
     db = Database(**dns)
     q_data = f'''
@@ -626,6 +681,7 @@ def give_followup_data(patient_serial_number):
     return jsonify( format_data_to_cast( follow_up_data ) )
 
 @app.route(root_dir + '/followup/<int:patient_serial_number>', methods=['POST'])
+@token_gate
 def update_folloup_data(patient_serial_number):
     db = Database(**dns)
     follow_up_data = format_data_to_insert( request.json )

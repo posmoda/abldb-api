@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- ホスト:                          127.0.0.1
--- サーバーのバージョン:                   10.4.12-MariaDB - mariadb.org binary distribution
+-- サーバーのバージョン:                   10.3.7-MariaDB - mariadb.org binary distribution
 -- サーバー OS:                      Win64
 -- HeidiSQL バージョン:               11.2.0.6213
 -- --------------------------------------------------------
@@ -29,10 +29,7 @@ CREATE TABLE IF NOT EXISTS `blood_exam` (
   CONSTRAINT `fk_blood_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.blood_exam: ~0 rows (約) のデータをダンプしています
-DELETE FROM `blood_exam`;
-/*!40000 ALTER TABLE `blood_exam` DISABLE KEYS */;
-/*!40000 ALTER TABLE `blood_exam` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.doac の構造をダンプしています
 DROP TABLE IF EXISTS `doac`;
@@ -42,10 +39,7 @@ CREATE TABLE IF NOT EXISTS `doac` (
   PRIMARY KEY (`doac_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.doac: ~0 rows (約) のデータをダンプしています
-DELETE FROM `doac`;
-/*!40000 ALTER TABLE `doac` DISABLE KEYS */;
-/*!40000 ALTER TABLE `doac` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.ecg の構造をダンプしています
 DROP TABLE IF EXISTS `ecg`;
@@ -62,10 +56,7 @@ CREATE TABLE IF NOT EXISTS `ecg` (
   CONSTRAINT `fk_ecg_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.ecg: ~0 rows (約) のデータをダンプしています
-DELETE FROM `ecg`;
-/*!40000 ALTER TABLE `ecg` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ecg` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.first_ablation の構造をダンプしています
 DROP TABLE IF EXISTS `first_ablation`;
@@ -182,10 +173,7 @@ CREATE TABLE IF NOT EXISTS `first_ablation` (
   CONSTRAINT `fk_firstab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.first_ablation: ~0 rows (約) のデータをダンプしています
-DELETE FROM `first_ablation`;
-/*!40000 ALTER TABLE `first_ablation` DISABLE KEYS */;
-/*!40000 ALTER TABLE `first_ablation` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.following_ablation の構造をダンプしています
 DROP TABLE IF EXISTS `following_ablation`;
@@ -269,10 +257,7 @@ CREATE TABLE IF NOT EXISTS `following_ablation` (
   CONSTRAINT `fk_followab_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.following_ablation: ~0 rows (約) のデータをダンプしています
-DELETE FROM `following_ablation`;
-/*!40000 ALTER TABLE `following_ablation` DISABLE KEYS */;
-/*!40000 ALTER TABLE `following_ablation` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.follow_up の構造をダンプしています
 DROP TABLE IF EXISTS `follow_up`;
@@ -342,10 +327,7 @@ CREATE TABLE IF NOT EXISTS `follow_up` (
   CONSTRAINT `FK_patients_followup` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.follow_up: ~0 rows (約) のデータをダンプしています
-DELETE FROM `follow_up`;
-/*!40000 ALTER TABLE `follow_up` DISABLE KEYS */;
-/*!40000 ALTER TABLE `follow_up` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.holter の構造をダンプしています
 DROP TABLE IF EXISTS `holter`;
@@ -368,10 +350,7 @@ CREATE TABLE IF NOT EXISTS `holter` (
   CONSTRAINT `fk_holter_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.holter: ~0 rows (約) のデータをダンプしています
-DELETE FROM `holter`;
-/*!40000 ALTER TABLE `holter` DISABLE KEYS */;
-/*!40000 ALTER TABLE `holter` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.hospital の構造をダンプしています
 DROP TABLE IF EXISTS `hospital`;
@@ -382,10 +361,7 @@ CREATE TABLE IF NOT EXISTS `hospital` (
   UNIQUE KEY `hospital_id_UNIQUE` (`hospital_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.hospital: ~0 rows (約) のデータをダンプしています
-DELETE FROM `hospital`;
-/*!40000 ALTER TABLE `hospital` DISABLE KEYS */;
-/*!40000 ALTER TABLE `hospital` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.internal_medicine の構造をダンプしています
 DROP TABLE IF EXISTS `internal_medicine`;
@@ -454,32 +430,26 @@ CREATE TABLE IF NOT EXISTS `internal_medicine` (
   PRIMARY KEY (`internal_medicine_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.internal_medicine: ~0 rows (約) のデータをダンプしています
-DELETE FROM `internal_medicine`;
-/*!40000 ALTER TABLE `internal_medicine` DISABLE KEYS */;
-/*!40000 ALTER TABLE `internal_medicine` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.logins の構造をダンプしています
 DROP TABLE IF EXISTS `logins`;
 CREATE TABLE IF NOT EXISTS `logins` (
   `login_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(50) NOT NULL,
-  `token` varchar(50) NOT NULL DEFAULT '0',
+  `token` varchar(64) NOT NULL DEFAULT '0',
   `is_logged_out` bit(1) NOT NULL DEFAULT b'0',
   `logged_in_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`login_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.logins: ~0 rows (約) のデータをダンプしています
-DELETE FROM `logins`;
-/*!40000 ALTER TABLE `logins` DISABLE KEYS */;
-/*!40000 ALTER TABLE `logins` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.patients の構造をダンプしています
 DROP TABLE IF EXISTS `patients`;
 CREATE TABLE IF NOT EXISTS `patients` (
   `patient_serial_number` int(11) NOT NULL AUTO_INCREMENT,
-  `registered_by` int(11) DEFAULT NULL,
+  `registered_by` varchar(50) DEFAULT NULL,
   `hospital_id` int(11) DEFAULT NULL,
   `patient_number` int(11) DEFAULT NULL,
   `ucg_id` int(11) DEFAULT NULL,
@@ -558,14 +528,13 @@ CREATE TABLE IF NOT EXISTS `patients` (
   UNIQUE KEY `hospital_id_patient_number` (`hospital_id`,`patient_number`),
   KEY `pt_hospital_id_idx` (`hospital_id`),
   KEY `fk_pt_ucg_idx` (`ucg_id`),
+  KEY `fk_pt_user` (`registered_by`),
   CONSTRAINT `fk_pt_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`),
+  CONSTRAINT `fk_pt_user` FOREIGN KEY (`registered_by`) REFERENCES `users` (`user_id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `pt_hospital_id` FOREIGN KEY (`hospital_id`) REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.patients: ~0 rows (約) のデータをダンプしています
-DELETE FROM `patients`;
-/*!40000 ALTER TABLE `patients` DISABLE KEYS */;
-/*!40000 ALTER TABLE `patients` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  ビュー abldb.patient_list の構造をダンプしています
 DROP VIEW IF EXISTS `patient_list`;
@@ -597,10 +566,7 @@ CREATE TABLE IF NOT EXISTS `recurrence` (
   CONSTRAINT `fk_recurrence_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.recurrence: ~0 rows (約) のデータをダンプしています
-DELETE FROM `recurrence`;
-/*!40000 ALTER TABLE `recurrence` DISABLE KEYS */;
-/*!40000 ALTER TABLE `recurrence` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.ucg の構造をダンプしています
 DROP TABLE IF EXISTS `ucg`;
@@ -631,10 +597,7 @@ CREATE TABLE IF NOT EXISTS `ucg` (
   PRIMARY KEY (`ucg_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.ucg: ~0 rows (約) のデータをダンプしています
-DELETE FROM `ucg`;
-/*!40000 ALTER TABLE `ucg` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ucg` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.users の構造をダンプしています
 DROP TABLE IF EXISTS `users`;
@@ -648,12 +611,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   CONSTRAINT `FK1_users_hospital` FOREIGN KEY (`hospital_id`) REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.users: ~0 rows (約) のデータをダンプしています
-DELETE FROM `users`;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` (`user_id`, `hospital_id`, `password_hash`, `salt`) VALUES
-	('test', NULL, _binary 0x36326665666366613439616530633264613439323565666163663065346262303432623230623462633031373932303536613962343533333064396132323335, 'BSMhA9DX3EMKdQxbkp74cg4uwUPnkLCUZgteUs8WUkfkSSjHicji53ShM7SjB3SG');
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  ビュー abldb.patient_list の構造をダンプしています
 DROP VIEW IF EXISTS `patient_list`;
