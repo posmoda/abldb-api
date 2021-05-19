@@ -364,28 +364,28 @@ def get_new_pt_number():
     header = request.headers.get("Authorization")
     _,token = header.split()
     user_id = check_token(token)
+    query_hospital = f'''
+        SELECT `hospital_id` FROM `users`
+            WHERE `user_id` = { token };
+    '''
+    hospital_id = db.query( query_hospital )[0][ 'hospital_id' ]
+    query_pt_number = f'''
+        SELECT MAX( `patient_number` ) FROM `patients`
+            WHERE `hospital_id` = { hospital_id };
+    '''
+    last_pt_number = db.query( query_pt_number )[0][ 'patient_number' ]
     query = f'''
         INSERT INTO `patients` 
-            (`registered_by`)
-        VALUES ('{user_id}';
+            (`registered_by`, `hospital_id`, `patient_number`)
+        VALUES ('{user_id}', {hospital_id}, {last_pt_number + 1});
     '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.execute('SELECT last_insert_id();')
-    #new_id = cursor.fetchone()
     patient_id = db.query( query, last_id=True )
-    #patient_id = new_id['last_insert_id()']
-    #cursor.close()
-    #cursor = get_cursor()
     ucg_id = create_new_ucg()
     query = f'''
         UPDATE `patients`
             SET `ucg_id` = { ucg_id }
         WHERE `patient_serial_number` = { patient_id };
     '''
-    #cursor.execute( query )
-    #cursor.close()
     db.query( query )
     return str( patient_id )
 
