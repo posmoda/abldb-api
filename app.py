@@ -366,14 +366,16 @@ def get_new_pt_number():
     user_id = check_token(token)
     query_hospital = f'''
         SELECT `hospital_id` FROM `users`
-            WHERE `user_id` = { token };
+            WHERE `user_id` = '{ user_id }';
     '''
     hospital_id = db.query( query_hospital )[0][ 'hospital_id' ]
     query_pt_number = f'''
-        SELECT MAX( `patient_number` ) FROM `patients`
+        SELECT MAX( `patient_number` ) AS `patient_number` FROM `patients`
             WHERE `hospital_id` = { hospital_id };
     '''
     last_pt_number = db.query( query_pt_number )[0][ 'patient_number' ]
+    if last_pt_number is None:
+        last_pt_number = 0
     query = f'''
         INSERT INTO `patients` 
             (`registered_by`, `hospital_id`, `patient_number`)
