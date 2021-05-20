@@ -211,6 +211,7 @@ def token_gate(func):
             return jsonify({ 'error': 'Token invalid' }), 403
         token = token_header.split()[1]
         logined_user = check_token( token )
+        kwargs[ 'logined_user_id' ] = logined_user
         if logined_user:
             return func( *args, **kwargs )
         else:
@@ -308,11 +309,16 @@ def authenticate_user():
 
 @app.route(root_dir + '/patients', methods=['GET'])
 @token_gate
-def list_patients():
+def list_patients(**kwargs):
     db = Database(**dns)
-    #cursor = get_cursor()
-    query = '''
+    query_hospital = f'''
+        SELECT `hospital_id` FROM `users`
+            WHERE `user_id` = '{ kwargs[ 'logined_user_id' ] }';
+    '''
+    hospital_id = db.query( query_hospital )[0]['hospital_id']
+    query = f'''
         SELECT * FROM patient_list
+            WHERE `hospital_id` = { hospital_id }
             ORDER BY `patient_serial_number`;
     '''
     #cursor.execute( query )
@@ -335,7 +341,7 @@ def list_patients():
 
 @app.route(root_dir + '/patients/<int:patient_serial_number>', methods=['GET'])
 @token_gate
-def give_a_patient(patient_serial_number):
+def give_a_patient(patient_serial_number, **kwargs):
     db = Database(**dns)
     #cursor = get_cursor()
     query = f'''
@@ -359,7 +365,7 @@ def give_a_patient(patient_serial_number):
 
 @app.route(root_dir + '/baseline/new', methods=['GET'])
 @token_gate
-def get_new_pt_number():
+def get_new_pt_number(**kwargs):
     db = Database(**dns)
     header = request.headers.get("Authorization")
     _,token = header.split()
@@ -393,7 +399,7 @@ def get_new_pt_number():
 
 @app.route(root_dir + '/baseline/<int:patient_serial_number>', methods=['GET'])
 @token_gate
-def give_baseline_data(patient_serial_number):
+def give_baseline_data(patient_serial_number, **kwargs):
     db = Database(**dns)
     #cursor = get_cursor()
     query = f'''
@@ -409,7 +415,7 @@ def give_baseline_data(patient_serial_number):
 
 @app.route(root_dir + '/baseline/<int:patient_serial_number>', methods=['POST'])
 @token_gate
-def update_baseline_data(patient_serial_number):
+def update_baseline_data(patient_serial_number, **kwargs):
     db = Database(**dns)
     baseline_data = format_data_to_insert( request.json )
     query = f'''
@@ -427,7 +433,7 @@ def update_baseline_data(patient_serial_number):
 
 @app.route(root_dir + '/ucg/new', methods=['GET'])
 @token_gate
-def get_new_ucg_number():
+def get_new_ucg_number(**kwargs):
     db = Database(**dns)
     query = '''
         INSERT INTO `ucg`
@@ -446,7 +452,7 @@ def get_new_ucg_number():
 
 @app.route(root_dir + '/ucg/<int:ucg_id>', methods=['GET'])
 @token_gate
-def give_ucg_data(ucg_id):
+def give_ucg_data(ucg_id, **kwargs):
     db = Database(**dns)
     query = f'''
         SELECT * FROM `ucg`
@@ -462,7 +468,7 @@ def give_ucg_data(ucg_id):
 
 @app.route(root_dir + '/ucg/<int:ucg_id>', methods=['POST'])
 @token_gate
-def update_ucg_data(ucg_id):
+def update_ucg_data(ucg_id, **kwargs):
     db = Database(**dns)
     ucg_data = format_data_to_insert( request.json )
     query = f'''
@@ -480,7 +486,7 @@ def update_ucg_data(ucg_id):
 
 @app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['GET'])
 @token_gate
-def give_first_abl_data(patient_serial_number):
+def give_first_abl_data(patient_serial_number, **kwargs):
     db = Database(**dns)
     q_data = f'''
         SELECT * FROM `first_ablation`
@@ -512,7 +518,7 @@ def give_first_abl_data(patient_serial_number):
 
 @app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['POST'])
 @token_gate
-def update_first_abl_data(patient_serial_number):
+def update_first_abl_data(patient_serial_number, **kwargs):
     db = Database(**dns)
     abl_data = format_data_to_insert( request.json )
     query = f'''
@@ -530,7 +536,7 @@ def update_first_abl_data(patient_serial_number):
 
 @app.route(root_dir + '/1st-abl/<int:first_abl_id>/medication_id', methods=['GET'])
 @token_gate
-def give_med_id_for_first_abl(first_abl_id):
+def give_med_id_for_first_abl(first_abl_id, **kwargs):
     db = Database(**dns)
     query = f'''
         SELECT `internal_medicine_id` FROM `first_ablation`
@@ -563,7 +569,7 @@ def give_med_id_for_first_abl(first_abl_id):
 
 @app.route(root_dir + '/medication/<int:medication_id>', methods=['GET'])
 @token_gate
-def give_medication_data(medication_id):
+def give_medication_data(medication_id, **kwargs):
     db = Database(**dns)
     query = f'''
         SELECT * FROM `internal_medicine`
@@ -578,7 +584,7 @@ def give_medication_data(medication_id):
 
 @app.route(root_dir + '/medication/<int:medication_id>', methods=['POST'])
 @token_gate
-def update_medication_data(medication_id):
+def update_medication_data(medication_id, **kwargs):
     db = Database(**dns)
     medication_data = format_data_to_insert( request.json )
     query = f'''
@@ -595,7 +601,7 @@ def update_medication_data(medication_id):
 
 @app.route(root_dir + '/following_ablation/new/<int:patient_serial_number>', methods=['GET'])
 @token_gate
-def get_new_follow_ablation_number(patient_serial_number):
+def get_new_follow_ablation_number(patient_serial_number, **kwargs):
     db = Database(**dns)
     query = f'''
         INSERT INTO `following_ablation`
@@ -625,7 +631,7 @@ def get_new_follow_ablation_number(patient_serial_number):
 
 @app.route(root_dir + '/following_ablation/<int:following_ablation_id>', methods=['GET'])
 @token_gate
-def give_following_ablation_data(following_ablation_id):
+def give_following_ablation_data(following_ablation_id, **kwargs):
     db = Database(**dns)
     query = f'''
         SELECT * FROM `following_ablation`
@@ -641,7 +647,7 @@ def give_following_ablation_data(following_ablation_id):
 
 @app.route(root_dir + '/following_ablation/<int:following_ablation_id>', methods=['POST'])
 @token_gate
-def update_following_ablation_data(following_ablation_id):
+def update_following_ablation_data(following_ablation_id, **kwargs):
     db = Database(**dns)
     following_ablation_data = format_data_to_insert( request.json )
     if request.json.get('order') == 'delete':
@@ -663,7 +669,7 @@ def update_following_ablation_data(following_ablation_id):
 
 @app.route(root_dir + '/followup/<int:patient_serial_number>', methods=['GET'])
 @token_gate
-def give_followup_data(patient_serial_number):
+def give_followup_data(patient_serial_number, **kwargs):
     db = Database(**dns)
     q_data = f'''
         SELECT * FROM `follow_up`
@@ -684,7 +690,7 @@ def give_followup_data(patient_serial_number):
 
 @app.route(root_dir + '/followup/<int:patient_serial_number>', methods=['POST'])
 @token_gate
-def update_folloup_data(patient_serial_number):
+def update_folloup_data(patient_serial_number, **kwargs):
     db = Database(**dns)
     follow_up_data = format_data_to_insert( request.json )
     query = f'''
