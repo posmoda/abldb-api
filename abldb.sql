@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- ホスト:                          127.0.0.1
--- サーバーのバージョン:                   10.4.12-MariaDB - mariadb.org binary distribution
+-- サーバーのバージョン:                   10.3.7-MariaDB - mariadb.org binary distribution
 -- サーバー OS:                      Win64
 -- HeidiSQL バージョン:               11.2.0.6213
 -- --------------------------------------------------------
@@ -14,10 +14,12 @@
 
 
 -- abldb のデータベース構造をダンプしています
+DROP DATABASE IF EXISTS `abldb`;
 CREATE DATABASE IF NOT EXISTS `abldb` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `abldb`;
 
 --  テーブル abldb.blood_exam の構造をダンプしています
+DROP TABLE IF EXISTS `blood_exam`;
 CREATE TABLE IF NOT EXISTS `blood_exam` (
   `patient_serial_number` int(11) NOT NULL,
   `date` date DEFAULT NULL,
@@ -27,24 +29,20 @@ CREATE TABLE IF NOT EXISTS `blood_exam` (
   CONSTRAINT `fk_blood_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.blood_exam: ~0 rows (約) のデータをダンプしています
-DELETE FROM `blood_exam`;
-/*!40000 ALTER TABLE `blood_exam` DISABLE KEYS */;
-/*!40000 ALTER TABLE `blood_exam` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.doac の構造をダンプしています
+DROP TABLE IF EXISTS `doac`;
 CREATE TABLE IF NOT EXISTS `doac` (
   `doac_id` int(11) NOT NULL,
   `name` varchar(127) DEFAULT NULL,
   PRIMARY KEY (`doac_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.doac: ~0 rows (約) のデータをダンプしています
-DELETE FROM `doac`;
-/*!40000 ALTER TABLE `doac` DISABLE KEYS */;
-/*!40000 ALTER TABLE `doac` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.ecg の構造をダンプしています
+DROP TABLE IF EXISTS `ecg`;
 CREATE TABLE IF NOT EXISTS `ecg` (
   `ecg_id` int(11) NOT NULL AUTO_INCREMENT,
   `patient_serial_number` int(11) NOT NULL,
@@ -58,18 +56,22 @@ CREATE TABLE IF NOT EXISTS `ecg` (
   CONSTRAINT `fk_ecg_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.ecg: ~0 rows (約) のデータをダンプしています
-DELETE FROM `ecg`;
-/*!40000 ALTER TABLE `ecg` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ecg` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.first_ablation の構造をダンプしています
+DROP TABLE IF EXISTS `first_ablation`;
 CREATE TABLE IF NOT EXISTS `first_ablation` (
   `first_ablation_id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date DEFAULT NULL,
   `internal_medicine_id` int(11) DEFAULT NULL,
   `patient_serial_number` int(11) NOT NULL,
   `threed_system` varchar(50) DEFAULT NULL,
+  `threed_system_carto` bit(1) DEFAULT NULL,
+  `threed_system_ensite` bit(1) DEFAULT NULL,
+  `threed_system_rhythmia` bit(1) DEFAULT NULL,
+  `carto` varchar(50) DEFAULT NULL,
+  `ensite` varchar(50) DEFAULT NULL,
+  `rhythmia` varchar(50) DEFAULT NULL,
   `abl_kind` varchar(50) DEFAULT NULL,
   `contrast` bit(1) DEFAULT NULL,
   `operation_duration` int(11) DEFAULT NULL,
@@ -175,16 +177,12 @@ CREATE TABLE IF NOT EXISTS `first_ablation` (
   KEY `fk_firstab_med_idx` (`internal_medicine_id`),
   CONSTRAINT `fk_firstab_med` FOREIGN KEY (`internal_medicine_id`) REFERENCES `internal_medicine` (`internal_medicine_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_firstab_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.first_ablation: ~0 rows (約) のデータをダンプしています
-DELETE FROM `first_ablation`;
-/*!40000 ALTER TABLE `first_ablation` DISABLE KEYS */;
-INSERT INTO `first_ablation` (`first_ablation_id`, `date`, `internal_medicine_id`, `patient_serial_number`, `threed_system`, `abl_kind`, `contrast`, `operation_duration`, `perspective_duration`, `skin_dose`, `total_dose`, `left_low_voltage_ratio05v`, `left_low_voltage_ratio08v`, `left_low_voltage_ratio10v`, `left_angiography`, `eepvi`, `completed_eepvi`, `box_one_ring`, `box_eepvi`, `posterior_center_line`, `completed_box`, `dormant_conduction`, `af_by_atp`, `only_pvi`, `svci`, `completed_svci`, `plsvc`, `completed_plsvc`, `non_pv_foci`, `non_pv_foci_place`, `low_voltage_abl`, `la_cfae`, `ra_cfae`, `cs_cfae`, `gp`, `chemical`, `roof_line`, `completed_roof_line`, `bottom_line`, `completed_bottom_line`, `post_mitral_line`, `ant_mitral_line`, `mitral_line_cs`, `completed_mitral_line`, `cti`, `completed_cti`, `past_cti`, `cb_pvi`, `roof_line_by_cb`, `bottom_line_by_cb`, `laser_pvi`, `hot_pvi`, `other`, `other_detail`, `conversion_to_sr`, `conversion_to_at`, `cardioversion`, `antiarrhythmia`, `burst_pacing`, `isp`, `complications`, `death_by_ope`, `death_on`, `reason_of_death`, `heart_swell_needs_puncture`, `heart_swell_needs_open_chest`, `heart_swell_needs_no_ope`, `left_fistula`, `esophageal_disorder`, `phrenic_disorder`, `tia`, `other_embolism`, `other_embolism_part`, `air_embolism`, `delayed_hypotension`, `infarction_around_ope`, `stenosis_around_ope`, `endocarditis`, `sepsis`, `heart_failure`, `respirator_failure`, `pseudoaneurysm`, `arteriovenous_fistula`, `puncture_hematoma`, `retroperitoneal_hematoma`, `transfusion`, `transfusion_reason`, `pulmonary_vein_stenosis`, `pulmonary_embolism`, `temporary_pm_by_sss`, `unexpected_sinus_failure`, `temporary_pm_by_avb`, `unexpected_atrioventricular_block`, `pneumothorax`, `hemothorax`, `sinus_dissection`, `sinus_stenosis`, `hold_damaged_valve`, `cured_damaged_valve`, `aortic_dissection`, `allergy`, `agent_allergy_detail`, `other_medicine_allergy`, `other_medicine_name_causes_allergy`, `other_complications`) VALUES
-	(1, NULL, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-/*!40000 ALTER TABLE `first_ablation` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.following_ablation の構造をダンプしています
+DROP TABLE IF EXISTS `following_ablation`;
 CREATE TABLE IF NOT EXISTS `following_ablation` (
   `following_ablation_id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date DEFAULT NULL,
@@ -265,14 +263,10 @@ CREATE TABLE IF NOT EXISTS `following_ablation` (
   CONSTRAINT `fk_followab_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.following_ablation: ~0 rows (約) のデータをダンプしています
-DELETE FROM `following_ablation`;
-/*!40000 ALTER TABLE `following_ablation` DISABLE KEYS */;
-INSERT INTO `following_ablation` (`following_ablation_id`, `date`, `patient_serial_number`, `ucg_id`, `internal_medicine_id`, `threed_system`, `left_low_voltage_ratio05v`, `left_low_voltage_ratio08v`, `left_low_voltage_ratio10v`, `lpv_reisolation`, `only_lspv`, `only_lipv`, `rpv_reisolation`, `only_rspv`, `only_ripv`, `re_box`, `pw_reisolation_roof`, `pw_reisolation_bottom`, `dormant_conduction`, `af_by_atp`, `svc_rec`, `svc_reisolation`, `completed_svc_reisolation`, `new_svci`, `completed_new_svci`, `plsvc_reisolation`, `completed_plsvc_reisolation`, `new_plsvc_reisolation`, `non_pv_foci`, `non_pv_foci_place`, `low_voltage_abl`, `la_cfae`, `ra_cfae`, `cs_cfae`, `gp`, `chemical`, `roof_line_rec`, `roof_line_reablation`, `completed_roof_line_reablation`, `new_roof_line`, `completed_new_roof_line`, `bottom_line_rec`, `bottom_line_reablation`, `completed_bottom_line_reablation`, `new_bottom_line`, `completed_new_bottom_line`, `mitral_line_rec`, `mitral_line_reablation`, `mitral_line_reablation_cs`, `completed_mitral_line_reablation`, `new_post_mitral_line`, `new_post_mitral_line_cs`, `new_anterior_mitral_line`, `completed_new_anterior_mitral_line`, `completed_new_mitral_line`, `cti_rec`, `cti_reablation`, `completed_cti_reablation`, `new_cti`, `completed_new_cti`, `avn_ablation`, `other_things`, `conversion_to_sr`, `conversion_to_at`, `conversion_execution`, `antiarrhythmic_during_ope`, `burst_pacing`, `isp`, `complications`, `complications_detail`) VALUES
-	(2, NULL, 1, 5, 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-/*!40000 ALTER TABLE `following_ablation` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.follow_up の構造をダンプしています
+DROP TABLE IF EXISTS `follow_up`;
 CREATE TABLE IF NOT EXISTS `follow_up` (
   `follow_up_id` int(11) NOT NULL AUTO_INCREMENT,
   `patient_serial_number` int(11) NOT NULL,
@@ -339,14 +333,10 @@ CREATE TABLE IF NOT EXISTS `follow_up` (
   CONSTRAINT `FK_patients_followup` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.follow_up: ~0 rows (約) のデータをダンプしています
-DELETE FROM `follow_up`;
-/*!40000 ALTER TABLE `follow_up` DISABLE KEYS */;
-INSERT INTO `follow_up` (`follow_up_id`, `patient_serial_number`, `af_in_three_months`, `af_in_three_months_kind`, `af_in_three_monhs_date`, `af_after_three_months`, `af_after_three_months_kind`, `af_after_three_months_date`, `af_antiarrhythmic`, `af_antiarrhythmic_still_af`, `af_ninety_days_after_second`, `af_ninety_days_after_second_date`, `af_after_second_kind`, `af_after_second_antiarrhythmic`, `af_after_second_antiarrhythmic_start`, `af_after_second_antiarrhythmic_still_af`, `af_final_status_kind`, `oac_final_follow`, `oac_off_after_final_session`, `oac_off_after_final_session_date`, `oac_restart_after_final_session`, `oac_re_off_after_final_session_date`, `oac_restart_after_final_session_date`, `anti_arrhythmic_final_follow`, `anti_arrhythmic_after_final_session_off_date`, `anti_arrhythmic_after_final_session_start_date`, `anti_arrhythmic_after_final_session_re_off_date`, `anti_arrhythmic_after_final_session_restart_date`, `pvct`, `ct_date`, `pv_stenosis`, `heart_failure`, `heart_failoure_admission_date`, `cerebral_infarction`, `cerebral_infarction_date`, `cerebral_infarction_comment`, `embolus`, `embolus_part`, `embolus_date`, `bleeding`, `bleeding_date`, `bleeding_detail`, `isth`, `head_bleed`, `head_bleed_date`, `gastro_bleed`, `gastro_bleed_date`, `death`, `death_detail`, `death_date`, `new_device`, `new_device_date`, `pci`, `pci_date`, `cabg`, `cabg_date`, `heart_ope`, `heart_ope_date`, `last_date`, `primary_doctor`) VALUES
-	(1, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-/*!40000 ALTER TABLE `follow_up` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.holter の構造をダンプしています
+DROP TABLE IF EXISTS `holter`;
 CREATE TABLE IF NOT EXISTS `holter` (
   `holter_id` int(11) NOT NULL AUTO_INCREMENT,
   `patient_serial_number` int(11) NOT NULL,
@@ -366,12 +356,10 @@ CREATE TABLE IF NOT EXISTS `holter` (
   CONSTRAINT `fk_holter_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.holter: ~0 rows (約) のデータをダンプしています
-DELETE FROM `holter`;
-/*!40000 ALTER TABLE `holter` DISABLE KEYS */;
-/*!40000 ALTER TABLE `holter` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.hospital の構造をダンプしています
+DROP TABLE IF EXISTS `hospital`;
 CREATE TABLE IF NOT EXISTS `hospital` (
   `hospital_id` int(11) NOT NULL AUTO_INCREMENT,
   `hospital_name` varchar(255) NOT NULL,
@@ -379,14 +367,10 @@ CREATE TABLE IF NOT EXISTS `hospital` (
   UNIQUE KEY `hospital_id_UNIQUE` (`hospital_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.hospital: ~1 rows (約) のデータをダンプしています
-DELETE FROM `hospital`;
-/*!40000 ALTER TABLE `hospital` DISABLE KEYS */;
-INSERT INTO `hospital` (`hospital_id`, `hospital_name`) VALUES
-	(1, '京大病院');
-/*!40000 ALTER TABLE `hospital` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.internal_medicine の構造をダンプしています
+DROP TABLE IF EXISTS `internal_medicine`;
 CREATE TABLE IF NOT EXISTS `internal_medicine` (
   `internal_medicine_id` int(11) NOT NULL AUTO_INCREMENT,
   `admission_wf` bit(1) DEFAULT NULL,
@@ -452,45 +436,28 @@ CREATE TABLE IF NOT EXISTS `internal_medicine` (
   PRIMARY KEY (`internal_medicine_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.internal_medicine: ~0 rows (約) のデータをダンプしています
-DELETE FROM `internal_medicine`;
-/*!40000 ALTER TABLE `internal_medicine` DISABLE KEYS */;
-INSERT INTO `internal_medicine` (`internal_medicine_id`, `admission_wf`, `admission_doac`, `admission_doac_amount`, `admission_asa`, `admission_thienopyridine`, `admission_prasugurel`, `admission_other_antiplatelet`, `admission_beta_blocker`, `admission_verapamil`, `admission_digitalis`, `admission_aad`, `admission_ia`, `admission_ib`, `admission_ic`, `admission_amiodarone`, `admission_sotalol`, `admission_bepridil`, `admission_arb`, `admission_ace`, `admission_anti_ca`, `admission_antihypertensive_diuretic`, `admission_diuretic`, `admission_spironolactone`, `admission_statine`, `admission_dm_insulin`, `admission_sglt2`, `admission_ppi`, `admission_h2_blocker`, `admission_nsaids`, `admission_steroid`, `wf`, `doac`, `doac_amount`, `asa`, `thienopyridine`, `prasugurel`, `other_antiplatelet`, `beta_blocker`, `verapamil`, `digitalis`, `aad`, `ia`, `ib`, `ic`, `amiodarone`, `sotalol`, `bepridil`, `arb`, `ace`, `anti_ca`, `antihypertensive_diuretic`, `diuretic`, `spironolactone`, `statine`, `dm_insulin`, `sglt2`, `ppi`, `h2_blocker`, `nsaids`, `steroid`) VALUES
-	(1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-/*!40000 ALTER TABLE `internal_medicine` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.logins の構造をダンプしています
+DROP TABLE IF EXISTS `logins`;
 CREATE TABLE IF NOT EXISTS `logins` (
   `login_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(50) NOT NULL,
   `token` varchar(64) NOT NULL DEFAULT '0',
   `is_logged_out` bit(1) NOT NULL DEFAULT b'0',
   `logged_in_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`login_id`),
-  KEY `FK_logins_users` (`user_id`),
-  CONSTRAINT `FK_logins_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`login_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.logins: ~5 rows (約) のデータをダンプしています
-DELETE FROM `logins`;
-/*!40000 ALTER TABLE `logins` DISABLE KEYS */;
-INSERT INTO `logins` (`login_id`, `user_id`, `token`, `is_logged_out`, `logged_in_at`) VALUES
-	(1, 'test', 'tmwc7nPx5DKoUGj36wwn3wUb5AYBTR1pZ54A1VQMlVklGIlHywU1aKXjfTVgEtpV', b'0', '2021-05-12 14:48:59'),
-	(2, 'test', 'DAbApx3z41idAFcCwoeasyx9ivhUmjjn2NXw4L13wzap1dlvqRj16iyUFWjuL6qB', b'0', '2021-05-20 12:05:38'),
-	(3, 'test', 'P4DgQOWf88Ibdla27aC7XDQgODF5vEhzqKlEKfJueY004azSXRpvh5CJMBtbxjhk', b'0', '2021-05-20 12:05:39'),
-	(4, 'test', 'XfwCI2ZCwyJtY2bXo0oiAHCP2P9xmZF4q2uDTHLHlwSnGlQY7awAcCXYHKOmU48A', b'0', '2021-05-20 12:05:44'),
-	(5, 'test', 'DE79mjNmJQLfz8ltNeUBGB1xQbwOwzWit9Zi5mZnZkGMzzuBgYQ3ufJHmSa1TfVL', b'0', '2021-05-20 12:06:18'),
-	(6, 'test', '1HvSUgcNpJ7thbRSi2bEyWltNonRUSDBV1bBKdtPMIGTLk3vkntLKBYdmScgMuIg', b'0', '2021-05-20 14:46:09');
-/*!40000 ALTER TABLE `logins` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.patients の構造をダンプしています
+DROP TABLE IF EXISTS `patients`;
 CREATE TABLE IF NOT EXISTS `patients` (
   `patient_serial_number` int(11) NOT NULL AUTO_INCREMENT,
-  `registered_by` varchar(50) NOT NULL,
-  `hospital_id` int(11) NOT NULL,
-  `patient_number` int(11) NOT NULL,
+  `registered_by` varchar(50) DEFAULT NULL,
+  `hospital_id` int(11) DEFAULT NULL,
+  `patient_number` int(11) DEFAULT NULL,
   `ucg_id` int(11) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `name_kana` varchar(255) DEFAULT NULL,
@@ -567,31 +534,28 @@ CREATE TABLE IF NOT EXISTS `patients` (
   UNIQUE KEY `hospital_id_patient_number` (`hospital_id`,`patient_number`),
   KEY `pt_hospital_id_idx` (`hospital_id`),
   KEY `fk_pt_ucg_idx` (`ucg_id`),
+  KEY `fk_pt_user` (`registered_by`),
   CONSTRAINT `fk_pt_ucg` FOREIGN KEY (`ucg_id`) REFERENCES `ucg` (`ucg_id`),
+  CONSTRAINT `fk_pt_user` FOREIGN KEY (`registered_by`) REFERENCES `users` (`user_id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `pt_hospital_id` FOREIGN KEY (`hospital_id`) REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.patients: ~0 rows (約) のデータをダンプしています
-DELETE FROM `patients`;
-/*!40000 ALTER TABLE `patients` DISABLE KEYS */;
-INSERT INTO `patients` (`patient_serial_number`, `registered_by`, `hospital_id`, `patient_number`, `ucg_id`, `name`, `name_kana`, `sex`, `weight`, `birthday`, `height`, `af_kind`, `rfca_cb`, `ehra_score`, `has_symptom`, `frality_scale`, `rhythm`, `heart_rate`, `pr_gap`, `qrs`, `sss`, `av_block`, `pm`, `icd`, `crtp`, `crtd`, `af_onset_on`, `af_immobilized_on`, `maze`, `open_heart`, `open_heart_detail`, `ht`, `dm`, `dyslip`, `hu`, `smoking_history`, `dialysys`, `thrombosis`, `ischemic_stroke`, `tia`, `hemorrhagic_stroke`, `isth_bleeding`, `problematic_bleeding`, `chf_nyha`, `blood_vessel_disease`, `sas`, `omi`, `ihd`, `hcm`, `dcm`, `other_cardiomiopathy`, `mr`, `ms`, `valvular_disease`, `hyperthyroidism`, `hypothyreosis`, `asd`, `other_congenital`, `ctd`, `malignancy`, `hba1c`, `cre`, `egfr`, `ccr`, `nt_pro_bnp`, `bnp`, `aptt`, `pt_inr`, `d_dimer`, `hb`, `hmt`, `tsh`, `ft4`, `ast`, `alt`, `tbil`) VALUES
-	(1, 'test', 1, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0.40000, 0.06000, 0.70000, 1.20000, 1.40000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(2, 'test', 1, 3, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(3, 'test', 1, 4, 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-/*!40000 ALTER TABLE `patients` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  ビュー abldb.patient_list の構造をダンプしています
+DROP VIEW IF EXISTS `patient_list`;
 -- VIEW 依存エラーを克服するために、一時テーブルを作成
 CREATE TABLE `patient_list` (
 	`patient_serial_number` INT(11) NOT NULL,
-	`hospital_id` INT(11) NOT NULL,
-	`patient_number` INT(11) NOT NULL,
+	`hospital_id` INT(11) NULL,
+	`patient_number` INT(11) NULL,
 	`first_ablation_id` INT(11) NULL,
 	`internal_medicine_id` INT(11) NULL,
 	`follow_up_id` INT(11) NULL
 ) ENGINE=MyISAM;
 
 --  テーブル abldb.recurrence の構造をダンプしています
+DROP TABLE IF EXISTS `recurrence`;
 CREATE TABLE IF NOT EXISTS `recurrence` (
   `recurrence_id` int(11) NOT NULL AUTO_INCREMENT,
   `af_at_after_antiarrhythmia` bit(1) DEFAULT NULL,
@@ -608,12 +572,10 @@ CREATE TABLE IF NOT EXISTS `recurrence` (
   CONSTRAINT `fk_recurrence_pt` FOREIGN KEY (`patient_serial_number`) REFERENCES `patients` (`patient_serial_number`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.recurrence: ~0 rows (約) のデータをダンプしています
-DELETE FROM `recurrence`;
-/*!40000 ALTER TABLE `recurrence` DISABLE KEYS */;
-/*!40000 ALTER TABLE `recurrence` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.ucg の構造をダンプしています
+DROP TABLE IF EXISTS `ucg`;
 CREATE TABLE IF NOT EXISTS `ucg` (
   `ucg_id` int(11) NOT NULL AUTO_INCREMENT,
   `lvef_teichholz` float(10,5) DEFAULT NULL,
@@ -639,20 +601,12 @@ CREATE TABLE IF NOT EXISTS `ucg` (
   `laa_flow` float(10,5) DEFAULT NULL,
   `sec4grades` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`ucg_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
--- テーブル abldb.ucg: ~0 rows (約) のデータをダンプしています
-DELETE FROM `ucg`;
-/*!40000 ALTER TABLE `ucg` DISABLE KEYS */;
-INSERT INTO `ucg` (`ucg_id`, `lvef_teichholz`, `lvef_simpson`, `lvdd`, `lvds`, `lad`, `la_diameter_vertical`, `la_diameter_horizontal`, `mr4grades`, `mr3grades`, `e_e`, `e_wave`, `a_wave`, `dct`, `ar4grades`, `ar3grades`, `tr4grades`, `tr3grades`, `tr_pg`, `ms`, `as`, `laa_flow`, `sec4grades`) VALUES
-	(1, 0.50000, 0.90000, 1.00000, 1.30000, 0.80000, NULL, NULL, NULL, NULL, 0.80000, 0.08000, 0.24000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-	(5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-/*!40000 ALTER TABLE `ucg` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  テーブル abldb.users の構造をダンプしています
+DROP TABLE IF EXISTS `users`;
 CREATE TABLE IF NOT EXISTS `users` (
   `user_id` varchar(50) NOT NULL,
   `hospital_id` int(11) DEFAULT NULL,
@@ -663,14 +617,10 @@ CREATE TABLE IF NOT EXISTS `users` (
   CONSTRAINT `FK1_users_hospital` FOREIGN KEY (`hospital_id`) REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- テーブル abldb.users: ~0 rows (約) のデータをダンプしています
-DELETE FROM `users`;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` (`user_id`, `hospital_id`, `password_hash`, `salt`) VALUES
-	('test', 1, _binary 0x65663230343330343361323166393961616536663034353735363465376165333163356336626236396431656231363131396530383766626338303030626435, 'BSMhA9DX3EMKdQxbkp74cg4uwUPnkLCUZgteUs8WUkfkSSjHicji53ShM7SjB3SG');
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+-- エクスポートするデータが選択されていません
 
 --  ビュー abldb.patient_list の構造をダンプしています
+DROP VIEW IF EXISTS `patient_list`;
 -- 一時テーブルを削除して、最終的な VIEW 構造を作成
 DROP TABLE IF EXISTS `patient_list`;
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `patient_list` AS SELECT `patients`.`patient_serial_number`,
