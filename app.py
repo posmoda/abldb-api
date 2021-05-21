@@ -188,11 +188,11 @@ def check_token(token):
             WHERE `token` = '{ token }'
                 AND `is_logged_out` = b'0';
     '''
-    result = db.query( query )[0]
-    if result is None:
+    result = db.query( query )
+    if result == []:
         return False
     else:
-        return result[ 'user_id' ]
+        return result[0][ 'user_id' ]
 
 app = Flask(__name__)
 CORS(app)
