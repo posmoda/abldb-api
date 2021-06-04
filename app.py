@@ -307,22 +307,29 @@ def authenticate_user():
 
 
 
-@app.route(root_dir + '/patients', methods=['GET'])
+@app.route(root_dir + '/patientlist/<int:page>', methods=['GET'])
 @token_gate
-def list_patients(**kwargs):
+def list_patients(page, **kwargs):
+    min_number = ( page * 100 ) - 100
+    max_number = page * 100
     db = Database(**dns)
     query_hospital = f'''
         SELECT `hospital_id` FROM `users`
             WHERE `user_id` = '{ kwargs[ 'logined_user_id' ] }';
     '''
     hospital_id = db.query( query_hospital )[0]['hospital_id']
+    query_patient_count = f'''
+        SELECT MAX(`patient_number`) AS last_number FROM `patient_list`
+            WHERE `hospital_id` = { hospital_id };
+    '''
+    patients_count = db.query( query_patient_count )[0]['last_number']
     query = f'''
         SELECT * FROM patient_list
             WHERE `hospital_id` = { hospital_id }
+                AND `patient_number` > { min_number }
+                AND `patient_number` <= { max_number }
             ORDER BY `patient_serial_number`;
     '''
-    #cursor.execute( query )
-    #patients_list = cursor.fetchall()
     patients_list = db.query( query )
     for row in patients_list:
         pt_number = row['patient_serial_number']
@@ -331,13 +338,11 @@ def list_patients(**kwargs):
                 WHERE `patient_serial_number` = { pt_number }
                 ORDER BY `date`;
         '''
-        #cursor.execute( query_follow_abl )
-        #res_follow_abl = cursor.fetchall()
         res_follow_abl = db.query( query_follow_abl )
         row['following_ablations'] = list( map( lambda x: x['following_ablation_id'], res_follow_abl ))
-    #cursor.close()
     patients_list = list( map( format_data_to_cast, patients_list ) )
-    return jsonify( patients_list )
+    data = { "patients": patients_list, "totalPatients": patients_count  }
+    return jsonify( data )
 
 @app.route(root_dir + '/patients/<int:patient_serial_number>', methods=['GET'])
 @token_gate
