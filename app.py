@@ -328,7 +328,7 @@ def list_patients(page, **kwargs):
             WHERE `hospital_id` = { hospital_id }
                 AND `patient_number` > { min_number }
                 AND `patient_number` <= { max_number }
-            ORDER BY `patient_serial_number`;
+            ORDER BY `patient_serial_number` DESC;
     '''
     patients_list = db.query( query )
     for row in patients_list:
