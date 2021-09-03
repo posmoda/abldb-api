@@ -61,7 +61,10 @@ dns = {
 #        'password': 'CC#x-#hW/p?R@SMe',
 #        'database': 'abldb'
 #        }
-#db = Database(**dns)
+
+#root_dir = ('/abldb-api')
+root_dir = ('/api')
+
 def random_string(n):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
 
@@ -153,12 +156,6 @@ def create_new_ucg():
         INSERT INTO `ucg` () VALUES();
     '''
     new_id = db.query( query, last_id=True )
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.execute( 'SELECT last_insert_id();' )
-    #new_id = cursor.fetchone()
-    #cursor.close()
     return new_id
 
 def create_new_medicine():
@@ -167,13 +164,21 @@ def create_new_medicine():
         INSERT INTO `internal_medicine` () VALUES ();
     '''
     new_id = db.query( query, last_id=True )
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.execute( 'SELECT last_insert_id();' )
-    #new_id = cursor.fetchone()
-    #cursor.close()
     return new_id
+
+def create_new_blood():
+    db = Database(**dns)
+    query = '''
+        INSERT INTO `blood_exam` () VALUES ();
+    '''
+    new_id = db.query( query, last_id=True )
+    return new_id
+
+def create_new_holter(follow_up_id):
+    db = Database(**dns)
+    query = f'''
+        INSERT INTO `holter` ( `follow_up_id` ) VALUES ( { follow_up_id } );
+    '''
 
 def delete_following_ablation(abl_id):
     db = Database(**dns)
@@ -219,8 +224,6 @@ def token_gate(func):
     return query_token
 
 
-#root_dir = ('/abldb-api')
-root_dir = ('/api')
 
 @app.route(root_dir)
 @test1
@@ -348,24 +351,18 @@ def list_patients(page, **kwargs):
 @token_gate
 def give_a_patient(patient_serial_number, **kwargs):
     db = Database(**dns)
-    #cursor = get_cursor()
     query = f'''
         SELECT * FROM `patient_list`
             WHERE `patient_serial_number` = { patient_serial_number };
     '''
-    #cursor.execute( query )
-    #patient = cursor.fetchone()
     patient = db.query( query )[0]
     query_follow_abl = f'''
         SELECT `following_ablation_id` FROM `following_ablation`
             WHERE `patient_serial_number` = { patient_serial_number }
             ORDER BY `date`;
     '''
-    #cursor.execute( query_follow_abl )
-    #res_follow_abl = cursor.fetchall()
     res_follow_abl = db.query( query_follow_abl )
     patient['following_ablations'] = list( map( lambda x: x['following_ablation_id'], res_follow_abl ))
-    #cursor.close
     return jsonify( format_data_to_cast( patient ) )
 
 @app.route(root_dir + '/baseline/new', methods=['GET'])
@@ -406,16 +403,11 @@ def get_new_pt_number(**kwargs):
 @token_gate
 def give_baseline_data(patient_serial_number, **kwargs):
     db = Database(**dns)
-    #cursor = get_cursor()
     query = f'''
         SELECT * FROM `patients`
             WHERE `patient_serial_number` = {patient_serial_number};
     '''
-    #cursor.execute( query )
-    #baseline = cursor.fetchone()
     baseline = db.query( query )[0]
-    #cursor.close()
-    #print( format_data_to_cast( baseline ) )
     return jsonify( format_data_to_cast( baseline ))
 
 @app.route(root_dir + '/baseline/<int:patient_serial_number>', methods=['POST'])
@@ -430,10 +422,6 @@ def update_baseline_data(patient_serial_number, **kwargs):
     '''
     #print( query )
     db.query( query )
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.close()
     return "ok"
 
 @app.route(root_dir + '/ucg/new', methods=['GET'])
@@ -445,12 +433,6 @@ def get_new_ucg_number(**kwargs):
         (`lvdd`)
         VALUES (NULL);
     '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #new_id = cursor.execute( 'SELECT last_insert_id();' )
-    #new_id = cursor.fetchone()
-    #cursor.close()
     new_id = db.query( query, last_id=True )
     #print( new_id )
     return jsonify( new_id )
@@ -463,11 +445,6 @@ def give_ucg_data(ucg_id, **kwargs):
         SELECT * FROM `ucg`
             WHERE `ucg_id` = { ucg_id };
     '''
-    #print( query )
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #ucg = cursor.fetchone()
-    #cursor.close()
     ucg = db.query( query )[0]
     return jsonify( format_data_to_cast( ucg ) )
 
@@ -481,11 +458,6 @@ def update_ucg_data(ucg_id, **kwargs):
             SET { ucg_data }
         WHERE `ucg_id` = { ucg_id };
     '''
-    #print( query );
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.close()
     db.query( query )
     return "ok"
 
@@ -502,23 +474,12 @@ def give_first_abl_data(patient_serial_number, **kwargs):
             (`patient_serial_number`)
         VALUES ( { patient_serial_number } );
     '''
-    #cursor = get_cursor()
-    #cursor.execute( q_data )
-    #result = cursor.fetchall()
-    result = db.query( q_data )
-    #print( result )
     if len( result ) == 0:
-        #print( q_new_data )
-        #cursor.execute( q_new_data )
-        #connection.commit()
-        #cursor.execute( q_data )
-        #abl_data = cursor.fetchone()
         db.query( q_new_data )
         abl_data = db.query(q_data)[0]
     else:
         abl_data = result[0]
     #print( abl_data )
-    #cursor.close()
     return jsonify( format_data_to_cast( abl_data ) )
 
 @app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['POST'])
@@ -531,11 +492,6 @@ def update_first_abl_data(patient_serial_number, **kwargs):
             SET { abl_data }
         WHERE `patient_serial_number` = { patient_serial_number };
     '''
-    #print( query )
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.close()
     db.query( query )
     return 'First ablation update: SUCCESS'
 
@@ -548,28 +504,16 @@ def give_med_id_for_first_abl(first_abl_id, **kwargs):
             WHERE `first_ablation_id` = { first_abl_id };
     '''
     q_new_medicine = "INSERT INTO `internal_medicine` () VALUES ();"
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #result = cursor.fetchone()
     result = db.query( query )[0]
     medicine_id = result[ 'internal_medicine_id' ]
     if medicine_id is None:
-        #cursor.execute( q_new_medicine )
-        #connection.commit()
-        #cursor.execute( 'SELECT last_insert_id();' )
-        #result = cursor.fetchone()
-        #print( result )
-        #medicine_id = result['last_insert_id()']
         medicine_id = db.query( q_new_medicine, last_id=True )
         q_register_medicine = f'''
             UPDATE `first_ablation`
                 SET `internal_medicine_id` = { medicine_id }
                 WHERE `first_ablation_id` = { first_abl_id };
         '''
-        #cursor.execute( q_register_medicine )
-        #connection.commit()
         db.query( q_register_medicine )
-    #cursor.close()
     return jsonify(medicine_id)
 
 @app.route(root_dir + '/medication/<int:medication_id>', methods=['GET'])
@@ -580,10 +524,6 @@ def give_medication_data(medication_id, **kwargs):
         SELECT * FROM `internal_medicine`
             WHERE `internal_medicine_id` = { medication_id }
     '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #medication_data = cursor.fetchone()
-    #cursor.close()
     medication_data = db.query( query )[0]
     return jsonify( format_data_to_cast( medication_data ) )
 
@@ -597,10 +537,6 @@ def update_medication_data(medication_id, **kwargs):
             SET { medication_data }
         WHERE `internal_medicine_id` = { medication_id };
     '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.close
     db.query( query )
     return "ok"
 
@@ -612,14 +548,7 @@ def get_new_follow_ablation_number(patient_serial_number, **kwargs):
         INSERT INTO `following_ablation`
             ( patient_serial_number ) VALUES ( { patient_serial_number } );
     '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #new_id = cursor.execute( 'SELECT last_insert_id();' )
-    #new_id = cursor.fetchone()
-    #follow_ablation_id = new_id['last_insert_id()']
     follow_ablation_id = db.query( query, last_id=True )
-    #cursor.close()
     ucg_id = create_new_ucg()
     medicine_id = create_new_medicine()
     query = f'''
@@ -627,10 +556,6 @@ def get_new_follow_ablation_number(patient_serial_number, **kwargs):
             SET `ucg_id` = { ucg_id }, `internal_medicine_id` = { medicine_id }
         WHERE `following_ablation_id` =  { follow_ablation_id };
     '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.close()
     db.query( query )
     return jsonify( follow_ablation_id )
 
@@ -642,11 +567,6 @@ def give_following_ablation_data(following_ablation_id, **kwargs):
         SELECT * FROM `following_ablation`
             WHERE `following_ablation_id` = { following_ablation_id };
     '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #follow_ablation = cursor.fetchone()
-    #print( follow_ablation )
-    #cursor.close()
     follow_ablation = db.query( query )[0]
     return jsonify( format_data_to_cast( follow_ablation ) )
 
@@ -665,10 +585,6 @@ def update_following_ablation_data(following_ablation_id, **kwargs):
                 SET { following_ablation_data }
             WHERE `following_ablation_id` = { following_ablation_id };
         '''
-    #cursor = get_cursor()
-    #cursor.execute( query )
-    #connection.commit()
-    #cursor.close()
     db.query( query )
     return "ok"
 
@@ -687,7 +603,21 @@ def give_followup_data(patient_serial_number, **kwargs):
     '''
     result = db.query( q_data )
     if len( result ) == 0:
-        db.query( q_new_data )
+        follow_up_id = db.query( q_new_data, last_id=True )
+        ucg_id1 = create_new_ucg()
+        ucg_id2 = create_new_ucg()
+        ucg_id3 = create_new_ucg()
+        blood_id1 = create_new_blood()
+        blood_id2 = create_new_blood()
+        blood_id3 = create_new_blood()
+
+        q_add_sections = f'''
+            UPDATE `follow_up`
+                SET `ucg_id1` = { ucg_id1 }, `ucg_id2` = { ucg_id2 }, `ucg_id3` = { ucg_id3 },
+                    `blood_id1` = { blood_id1 }, `blood_id2` = { blood_id2 }, `blood_id3` = { blood_id3 }
+            WHERE `follow_up_id` = { follow_up_id };
+        '''
+
         follow_up_data = db.query(q_data)[0]
     else:
         follow_up_data = result[0]
@@ -695,7 +625,7 @@ def give_followup_data(patient_serial_number, **kwargs):
 
 @app.route(root_dir + '/followup/<int:patient_serial_number>', methods=['POST'])
 @token_gate
-def update_folloup_data(patient_serial_number, **kwargs):
+def update_followup_data(patient_serial_number, **kwargs):
     db = Database(**dns)
     follow_up_data = format_data_to_insert( request.json )
     query = f'''
