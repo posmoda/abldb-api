@@ -50,8 +50,8 @@ class Database:
             return data
 
 dns = {
-        'user': 'root',
-        'host': '127.0.0.1',
+        'user': 'tomoki',
+        'host': 'localhost',
         'password': 'utq0975e',
         'database': 'abldb'
         }
@@ -461,6 +461,85 @@ def update_ucg_data(ucg_id, **kwargs):
     db.query( query )
     return "ok"
 
+@app.route(root_dir + '/holter/<int:holter_id>', methods=['GET'])
+@token_gate
+def give_holter_data(holter_id, **kwargs):
+    db = Database(**dns)
+    query = f'''
+        SELECT * FROM `holter`
+            WHERE `holter_id` = { holter_id };
+    '''
+    data = db.query( query )[0]
+    return jsonify( format_data_to_cast( data ) )
+
+@app.route(root_dir + '/holter/<int:holter_id>', methods=['POST'])
+@token_gate
+def update_holter_data(holter_id, **kwargs):
+    db = Database(**dns)
+    holter_data = format_data_to_insert( request.json )
+    query = f'''
+        UPDATE `holter`
+            SET { holter_data }
+        WHERE `holter_id` = { holter_id };
+    '''
+    db.query( query )
+    return "ok"
+
+@app.route(root_dir + '/blood/<int:blood_id>', methods=['GET'])
+@token_gate
+def give_blood_data(blood_id, **kwargs):
+    db = Database(**dns)
+    query = f'''
+        SELECT * FROM `blood_exam`
+            WHERE `blood_id` = { blood_id };
+    '''
+    data = db.query( query )[0]
+    return jsonify( format_data_to_cast( data ) )
+
+@app.route(root_dir + '/blood/<int:blood_id>', methods=['POST'])
+@token_gate
+def update_blood_data(blood_id, **kwargs):
+    db = Database(**dns)
+    blood_data = format_data_to_insert( request.json )
+    query = f'''
+        UPDATE `blood_exam`
+            SET { blood_data }
+        WHERE `blood_id` = { blood_id };
+    '''
+    db.query( query )
+    return "ok"
+
+@app.route(root_dir + '/holter_list/<int:ptSerial>', methods=['GET'])
+@token_gate
+def give_holter_list(ptSerial, **kwargs):
+    db = Database(**dns)
+    query = f'''
+        SELECT `holter_id`, `date` FROM `holter`
+            WHERE `patient_serial_number` = { ptSerial };
+    '''
+    result = db.query( query )
+    if len( result ) == 0:
+        data = []
+    else:
+        print( result )
+        data = result
+
+    return jsonify( data )
+
+
+@app.route(root_dir + '/holter/<int:ptSerial>/new', methods=['GET'])
+@token_gate
+def create_new_holter(ptSerial, **kwargs):
+    db = Database(**dns)
+    query = f'''
+        INSERT INTO `holter`
+            ( `patient_serial_number` )
+        VALUES ( { ptSerial } );
+    '''
+    db.query( query )
+    return give_holter_list(ptSerial)
+
+
 @app.route(root_dir + '/1st-abl/<int:patient_serial_number>', methods=['GET'])
 @token_gate
 def give_first_abl_data(patient_serial_number, **kwargs):
@@ -618,6 +697,8 @@ def give_followup_data(patient_serial_number, **kwargs):
             WHERE `follow_up_id` = { follow_up_id };
         '''
 
+        db.query( q_add_sections )
+
         follow_up_data = db.query(q_data)[0]
     else:
         follow_up_data = result[0]
@@ -635,6 +716,10 @@ def update_followup_data(patient_serial_number, **kwargs):
     '''
     db.query( query )
     return 'Follow up update: SUCESS'
+
+
+
+
 
 if __name__ == '__main__':
     app.run( threaded=True, debug=True )
