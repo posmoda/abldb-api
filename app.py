@@ -553,6 +553,7 @@ def give_first_abl_data(patient_serial_number, **kwargs):
             (`patient_serial_number`)
         VALUES ( { patient_serial_number } );
     '''
+    result = db.query( q_data )
     if len( result ) == 0:
         db.query( q_new_data )
         abl_data = db.query(q_data)[0]
