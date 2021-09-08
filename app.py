@@ -702,6 +702,28 @@ def give_followup_data(patient_serial_number, **kwargs):
         follow_up_data = db.query(q_data)[0]
     else:
         follow_up_data = result[0]
+
+        for i in range(1,4):
+            if not follow_up_data[ 'ucg_id' + str(i) ]:
+                ucg_id = create_new_ucg()
+                q_add_ucg = f'''
+                    UPDATE `follow_up`
+                        SET `ucg_id{ str(i) }` = { ucg_id }
+                        WHERE `follow_up_id` = { follow_up_data[ 'follow_up_id' ] };
+                '''
+                db.query( q_add_ucg )
+                follow_up_data[ 'ucg_id' + str(i) ] = ucg_id
+
+            if not follow_up_data[ 'blood_id' + str(i) ]:
+                blood_id = create_new_blood()
+                q_add_blood = f'''
+                    UPDATE `follow_up`
+                        SET `blood_id{ str(i) }` = { blood_id }
+                        WHERE `follow_up_id` = { follow_up_data[ 'follow_up_id' ] };
+                '''
+                db.query( q_add_ucg )
+                follow_up_data[ 'blood_id' + str(i) ] = blood_id
+
     return jsonify( format_data_to_cast( follow_up_data ) )
 
 @app.route(root_dir + '/followup/<int:patient_serial_number>', methods=['POST'])
