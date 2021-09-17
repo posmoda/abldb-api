@@ -2,6 +2,8 @@ import mariadb
 import re
 import hashlib
 import random, string
+import openpyxl as xl
+import pandas as pd
 from datetime import date, datetime
 from flask import *
 from flask_cors import CORS
@@ -738,10 +740,149 @@ def update_followup_data(patient_serial_number, **kwargs):
         WHERE `patient_serial_number` = { patient_serial_number };
     '''
     db.query( query )
-    return 'Follow up update: SUCESS'
+    return 'Follow up update: SUCCESS'
+
+@app.route( root_dir + '/existing_users', methods=['GET'] )
+@token_gate
+def give_existing_users( **kwargs ):
+    db = Database(**dns)
+    q_users = f'''
+        SELECT `user_id` FROM `users`;
+    '''
+    res_users = db.query( q_users )
+    users = list( map( lambda x: x[ 'user_id' ], res_users ) )
+
+    q_institutes = f'''
+        SELECT * FROM `hospital`;
+    '''
+    res_institutes = db.query( q_institutes )
+    ids = list( map( lambda x: x[ 'hospital_id' ], res_institutes ) )
+    hospitals = list( map( lambda x: x[ 'hospital_name' ], res_institutes ) )
+    institutes = dict( zip( ids, hospitals ) )
+
+    return jsonify( { 'ids': users, 'institutes': institutes } )
+
+@app.route( root_dir + '/new_user', methods=['POST'] )
+@token_gate
+def add_new_user( **kwargs ):
+    db = Database( **dns )
+
+    new_user = request.json
+    user_id = new_user[ 'user' ]
+    hospital_id = int( new_user[ 'institute' ] )
+    password_hash = new_user[ 'hash' ]
+    salt = new_user[ 'salt' ]
+
+    q_newuser = f'''
+        INSERT INTO `users` ( `user_id`, `hospital_id`, `password_hash`, `salt` )
+            VALUES ( '{ user_id }', { hospital_id }, CAST( '{ password_hash }' AS BINARY ), '{ salt }' );
+    '''
+
+    try:
+        db.query( q_newuser )
+    except:
+        return jsonify( { 'message': 'データベースエラーです' } )
+
+    return jsonify( { 'message': '登録しました' } )
 
 
+@app.route( root_dir + '/test', methods=['GET'] )
+def make_excel_file():
+    hospital_id = 1
+    db = Database( **dns )
 
+    def get_columns( result ):
+        #q_columns = f'''
+        #    SHOW COLUMNS FROM `{ table }`;
+        #'''
+        #res_columns = db.query( q_columns )
+        #columns = list( map( lambda x: x[ 'Field' ], res_columns ) )
+        #return columns
+        return result[0].keys()
+
+    def table_to_excel( table, ws ):
+        columns = table[0].keys()
+
+        x = 1
+        for column in columns:
+            ws.cell( row=1, column=x, value=column)
+            x += 1
+
+        for i, table_row in enumerate( table ):
+            for j, column in enumerate( columns ):
+                value = table_row[ column ]
+                if value == b'\x00':
+                    value = False
+                elif value == b'\x01':
+                    value = True
+                #print( value )
+                ws.cell( row=2+i, column=j+1, value=value )
+
+    # baseline
+    q_baseline = f'''
+        SELECT * FROM `patients`
+            LEFT JOIN `ucg`
+                ON `patients`.`ucg_id` = `ucg`.`ucg_id`
+                AND `patients`.`hospital_id` = { hospital_id };
+    '''
+    baseline_table = db.query( q_baseline )
+
+    wb = xl.Workbook()
+    baseline_ws = wb.active
+    baseline_ws.title = "Baseline"
+    table_to_excel( baseline_table, baseline_ws )
+
+    #1st session
+    q_first_session = f'''
+        SELECT `patients`.`patient_number`, `first_ablation`.* FROM `patients`
+            LEFT JOIN `first_ablation`
+                ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number`
+                AND `patients`.`hospital_id` = { hospital_id };
+    '''
+    first_session_table = db.query( q_first_session )
+
+    first_session_ws = wb.create_sheet( title="1st session" )
+    table_to_excel( first_session_table, first_session_ws )
+
+    #1st session medicine
+    q_first_medicine = f'''
+        SELECT `patients`.`patient_number`, `internal_medicine`.* FROM `patients`
+            LEFT JOIN `first_ablation`
+                ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number`
+                AND `patients`.`hospital_id` = { hospital_id }
+            LEFT JOIN `internal_medicine`
+                ON `first_ablation`.`internal_medicine_id` = `internal_medicine`.`internal_medicine_id`;
+    '''
+    first_medicine_table = db.query( q_first_medicine )
+
+    first_medicine_ws = wb.create_sheet( title="1st session内服薬" )
+    table_to_excel( first_medicine_table, first_medicine_ws )
+
+    #Following session
+    q_following_session = f'''
+        SELECT  `patients`.`patient_number`, `following_ablation`.*, `ucg`.*, `internal_medicine`.* FROM `following_ablation`
+            LEFT JOIN `patients`
+                ON `following_ablation`.`patient_serial_number` = `patients`.`patient_serial_number`
+                AND `patients`.`hospital_id` = { hospital_id }
+            LEFT JOIN `ucg`
+                ON `following_ablation`.`ucg_id` = `ucg`.`ucg_id`
+            LEFT JOIN `internal_medicine`
+                ON `following_ablation`.`internal_medicine_id` = `internal_medicine`.`internal_medicine_id`;
+    '''
+    following_session_table = db.query( q_following_session )
+
+    following_session_df = pd.DataFrame( following_session_table )
+    grouped_session_df = following_session_df.groupby( 'patient_number' )
+
+    print( grouped_session_df[ 'date' ].idxmin() )
+    first_session_df = following_session_df.loc[ grouped_session_df[ 'date' ].idxmin(),: ]
+    first_session_table = list( first_session_df.unstack().reset_index().itertuples( name=None, index=None ) )
+    first_session_ws = wb.create_sheet( title="1st session" )
+    table_to_excel( first_session_table, first_session_ws )
+
+    wb.save( '/home/tomoki/desktop/test.xlsx' )
+
+    return( "dekitayo!" )
 
 
 if __name__ == '__main__':
