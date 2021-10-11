@@ -333,7 +333,7 @@ def list_patients(page, **kwargs):
             WHERE `hospital_id` = { hospital_id }
                 AND `patient_number` > { min_number }
                 AND `patient_number` <= { max_number }
-            ORDER BY `patient_serial_number` DESC;
+            ORDER BY `patient_number` DESC;
     '''
     patients_list = db.query( query )
     for row in patients_list:
@@ -785,6 +785,70 @@ def add_new_user( **kwargs ):
 
     return jsonify( { 'message': '登録しました' } )
 
+@app.route( root_dir + '/new_institute', methods=['POST'] )
+@token_gate
+def add_new_institute( **kwargs ):
+    db = Database( **dns )
+    new_institute = request.json[ 'institute' ];
+
+
+    q_newinstitute = f'''
+        INSERT INTO `hospital` ( `hospital_name` )
+            VALUES ( '{ new_institute }' );
+    '''
+
+    print( q_newinstitute )
+
+    try:
+        institute_num = db.query( q_newinstitute, last_id=True )
+    except:
+        return jsonify( { 'message': 'データベースエラーです' } )
+
+    return jsonify( {
+        'message': 'OK',
+        'instituteNum': institute_num
+    } )
+
+@app.route( root_dir + '/new_password', methods=['POST'] )
+@token_gate
+def change_password( **kwargs ):
+    db = Database( **dns )
+    request_data = request.json
+
+    user_salt = request_data['userSalt']
+    challenge_hash = request_data['challengeHash']
+    new_salt = request_data['newSalt']
+    new_hash = request_data['newHash']
+    user_id = request_data['user']
+
+    query_validate_hash = f'''
+        SELECT cast(`password_hash` as char) AS password_hash FROM `users`
+            WHERE `user_id` = '{ user_id }';
+    '''
+    result = db.query( query_validate_hash )
+
+    if len(result) == 0:
+        return jsonify({ 'message': 'データベースエラーです' })
+    else:
+        existing_hash = result[0]['password_hash']
+        hash_seed = existing_hash + user_salt
+        response_hash = hashlib.sha256(hash_seed.encode('UTF-8')).hexdigest()
+        if challenge_hash == response_hash:
+            query_password = f'''
+                UPDATE `users`
+                    SET `password_hash` = CAST( '{ new_hash }' AS BINARY ),
+                        `salt` = '{ new_salt }'
+                    WHERE `user_id` = '{ user_id }';
+            '''
+            
+            try:
+                db.query( query_password )
+            except:
+                return jsonify({ 'message': 'データベースエラーです' })
+
+            return jsonify({ 'message': 'OK' })
+        else:
+            return jsonify({ 'message': 'パスワードが間違っています' })
 
 @app.route( root_dir + '/test', methods=['GET'] )
 def make_excel_file():
