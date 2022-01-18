@@ -8,6 +8,7 @@ from datetime import date, datetime
 from flask import *
 from flask_cors import CORS
 from functools import wraps
+import ipaddress
 
 class Database:
     def __init__(self, **dns):
@@ -60,6 +61,7 @@ dns = {
 
 #dns = {
 #        'user': 'abldb',
+#        'host': 'localhost',
 #        'password': 'CC#x-#hW/p?R@SMe',
 #        'database': 'abldb'
 #        }
@@ -850,9 +852,15 @@ def change_password( **kwargs ):
         else:
             return jsonify({ 'message': 'パスワードが間違っています' })
 
-@app.route( root_dir + '/test', methods=['GET'] )
+@app.route( root_dir + '/export_xlsx', methods=['GET'] )
 def make_excel_file():
-    hospital_id = 1
+    remote_addr = ipaddress.ip_address(request.remote_addr)
+    if remote_addr != ipaddress.ip_address("127.0.0.1"):
+        return "Access Denied", 403
+
+    hospital_id = request.args.get("hpid")
+    exporting_path = request.args.get("path")
+    print(exporting_path)
     db = Database( **dns )
 
     def get_columns( result ):
@@ -887,7 +895,7 @@ def make_excel_file():
         SELECT * FROM `patients`
             LEFT JOIN `ucg`
                 ON `patients`.`ucg_id` = `ucg`.`ucg_id`
-                AND `patients`.`hospital_id` = { hospital_id };
+            WHERE `patients`.`hospital_id` = { hospital_id };
     '''
     baseline_table = db.query( q_baseline )
 
@@ -901,7 +909,7 @@ def make_excel_file():
         SELECT `patients`.`patient_number`, `first_ablation`.* FROM `patients`
             LEFT JOIN `first_ablation`
                 ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number`
-                AND `patients`.`hospital_id` = { hospital_id };
+            WHERE `patients`.`hospital_id` = { hospital_id };
     '''
     first_session_table = db.query( q_first_session )
 
@@ -913,9 +921,9 @@ def make_excel_file():
         SELECT `patients`.`patient_number`, `internal_medicine`.* FROM `patients`
             LEFT JOIN `first_ablation`
                 ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number`
-                AND `patients`.`hospital_id` = { hospital_id }
             LEFT JOIN `internal_medicine`
-                ON `first_ablation`.`internal_medicine_id` = `internal_medicine`.`internal_medicine_id`;
+                ON `first_ablation`.`internal_medicine_id` = `internal_medicine`.`internal_medicine_id`
+            WHERE `patients`.`hospital_id` = { hospital_id };
     '''
     first_medicine_table = db.query( q_first_medicine )
 
@@ -927,24 +935,21 @@ def make_excel_file():
         SELECT  `patients`.`patient_number`, `following_ablation`.*, `ucg`.*, `internal_medicine`.* FROM `following_ablation`
             LEFT JOIN `patients`
                 ON `following_ablation`.`patient_serial_number` = `patients`.`patient_serial_number`
-                AND `patients`.`hospital_id` = { hospital_id }
             LEFT JOIN `ucg`
                 ON `following_ablation`.`ucg_id` = `ucg`.`ucg_id`
             LEFT JOIN `internal_medicine`
-                ON `following_ablation`.`internal_medicine_id` = `internal_medicine`.`internal_medicine_id`;
+                ON `following_ablation`.`internal_medicine_id` = `internal_medicine`.`internal_medicine_id`
+            WHERE `patients`.`hospital_id` = { hospital_id }
+            ORDER BY `patient_number`, `following_ablation`.`date`;
     '''
     following_session_table = db.query( q_following_session )
 
     following_session_df = pd.DataFrame( following_session_table )
-    grouped_session_df = following_session_df.groupby( 'patient_number' )
 
-    print( grouped_session_df[ 'date' ].idxmin() )
-    first_session_df = following_session_df.loc[ grouped_session_df[ 'date' ].idxmin(),: ]
-    first_session_table = list( first_session_df.unstack().reset_index().itertuples( name=None, index=None ) )
-    first_session_ws = wb.create_sheet( title="1st session" )
-    table_to_excel( first_session_table, first_session_ws )
+    following_session_ws = wb.create_sheet( title="following session" )
+    table_to_excel( following_session_table, following_session_ws )
 
-    wb.save( '/home/tomoki/desktop/test.xlsx' )
+    wb.save( exporting_path )
 
     return( "dekitayo!" )
 
