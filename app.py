@@ -31,6 +31,10 @@ class Database:
         if kwargs.get('prepared', False):
             cursor = self.dbh.cursor(prepared=True, dictionary=True, buffered=True)
             cursor.execute(stmt, args)
+        elif kwargs.get('duplicated', False):
+            cursor = self.dbh.cursor(buffered=True)
+            cursor.execute(stmt)
+            fields = [md[0] for md in cursor.description]
         else:
             cursor = self.dbh.cursor(dictionary=True, buffered=True)
             cursor.execute(stmt)
@@ -46,25 +50,27 @@ class Database:
             self._close()
             #print( 'Inserted ID is ' + str( inserted_id  ))
             return inserted_id
+        elif kwargs.get('duplicated', False):
+            return [fields, data]
         else:
             cursor.close()
             self._close()
             #print( 'Data is ' + str( data ))
             return data
 
-#dns = {
-#        'user': 'tomoki',
-#        'host': 'localhost',
-#        'password': 'utq0975e',
-#        'database': 'abldb'
-#        }
-
 dns = {
-        'user': 'abldb',
+        'user': 'tomoki',
         'host': 'localhost',
-        'password': 'CC#x-#hW/p?R@SMe',
+        'password': 'utq0975e',
         'database': 'abldb'
         }
+
+#dns = {
+#        'user': 'abldb',
+#        'host': 'localhost',
+#        'password': 'CC#x-#hW/p?R@SMe',
+#        'database': 'abldb'
+#        }
 
 #root_dir = ('/abldb-api')
 root_dir = ('/api')
@@ -873,7 +879,11 @@ def make_excel_file():
         return result[0].keys()
 
     def table_to_excel( table, ws ):
-        columns = table[0].keys()
+        if isinstance( table[0], dict ):
+            columns = table[0].keys()
+        elif isinstance( table[0], list ):
+            columns = table[0]
+            table = table[1]
 
         x = 1
         for column in columns:
@@ -882,7 +892,11 @@ def make_excel_file():
 
         for i, table_row in enumerate( table ):
             for j, column in enumerate( columns ):
-                value = table_row[ column ]
+                value = None
+                if isinstance( table[0], dict ):
+                    value = table_row[ column ]
+                elif isinstance( table[0], tuple ):
+                    value = table_row[ j ]
                 if value == b'\x00':
                     value = False
                 elif value == b'\x01':
@@ -958,6 +972,25 @@ def make_excel_file():
     table_to_excel( following_session_table, following_session_ws )
     for count,col in enumerate([2,4,5]):
         following_session_ws.delete_cols(col - count)
+
+    #Follow up
+    q_followup = f'''
+        SELECT `patients`.`patient_number`, `follow_up`.*,
+                `ucg1`.*, `ucg2`.*, `ucg3`.*, `blood1`.*, `blood2`.*, `blood3`.* FROM `patients` 
+            LEFT JOIN `follow_up` ON `patients`.`patient_serial_number` = `follow_up`.`patient_serial_number`
+            LEFT JOIN `ucg` as `ucg1` ON `follow_up`.`ucg_id1` = `ucg1`.`ucg_id`
+            LEFT JOIN `ucg` as `ucg2` ON `follow_up`.`ucg_id2` = `ucg2`.`ucg_id`
+            LEFT JOIN `ucg` as `ucg3` ON `follow_up`.`ucg_id3` = `ucg3`.`ucg_id`
+            LEFT JOIN `blood_exam` as `blood1` ON `follow_up`.`blood_id1` = `blood1`.`blood_id`
+            LEFT JOIN `blood_exam` as `blood2` ON `follow_up`.`blood_id2` = `blood2`.`blood_id`
+            LEFT JOIN `blood_exam` as `blood3` ON `follow_up`.`blood_id3` = `blood3`.`blood_id`
+            WHERE `patients`.`hospital_id` = { hospital_id };
+    '''
+    followup_table = db.query( q_followup, duplicated=True )
+    print(followup_table[0])
+    #print(followup_table[1])
+    followup_ws = wb.create_sheet( title="follow up" )
+    table_to_excel( followup_table, followup_ws )
 
     wb.save( exporting_path )
 
