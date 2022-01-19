@@ -52,19 +52,19 @@ class Database:
             #print( 'Data is ' + str( data ))
             return data
 
-dns = {
-        'user': 'tomoki',
-        'host': 'localhost',
-        'password': 'utq0975e',
-        'database': 'abldb'
-        }
-
 #dns = {
-#        'user': 'abldb',
+#        'user': 'tomoki',
 #        'host': 'localhost',
-#        'password': 'CC#x-#hW/p?R@SMe',
+#        'password': 'utq0975e',
 #        'database': 'abldb'
 #        }
+
+dns = {
+        'user': 'abldb',
+        'host': 'localhost',
+        'password': 'CC#x-#hW/p?R@SMe',
+        'database': 'abldb'
+        }
 
 #root_dir = ('/abldb-api')
 root_dir = ('/api')
@@ -903,6 +903,8 @@ def make_excel_file():
     baseline_ws = wb.active
     baseline_ws.title = "Baseline"
     table_to_excel( baseline_table, baseline_ws )
+    for count,col in enumerate([1,2,3,5]):
+        baseline_ws.delete_cols(col - count)
 
     #1st session
     q_first_session = f'''
@@ -915,6 +917,9 @@ def make_excel_file():
 
     first_session_ws = wb.create_sheet( title="1st session" )
     table_to_excel( first_session_table, first_session_ws )
+ 
+    for count,col in enumerate([2,4,5]):
+        first_session_ws.delete_cols(col - count)
 
     #1st session medicine
     q_first_medicine = f'''
@@ -929,6 +934,9 @@ def make_excel_file():
 
     first_medicine_ws = wb.create_sheet( title="1st session内服薬" )
     table_to_excel( first_medicine_table, first_medicine_ws )
+
+    for count,col in enumerate([2]):
+        first_medicine_ws.delete_cols(col - count)
 
     #Following session
     q_following_session = f'''
@@ -948,6 +956,8 @@ def make_excel_file():
 
     following_session_ws = wb.create_sheet( title="following session" )
     table_to_excel( following_session_table, following_session_ws )
+    for count,col in enumerate([2,4,5]):
+        following_session_ws.delete_cols(col - count)
 
     wb.save( exporting_path )
 
