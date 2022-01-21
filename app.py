@@ -898,9 +898,15 @@ def make_excel_file():
                 elif isinstance( table[0], tuple ):
                     value = table_row[ j ]
                 if value == b'\x00':
-                    value = False
+                    if column == 'sex':
+                        value = 'Female'
+                    else:
+                        value = False
                 elif value == b'\x01':
-                    value = True
+                    if column == 'sex':
+                        value = 'Male'
+                    else:
+                        value = True
                 #print( value )
                 ws.cell( row=2+i, column=j+1, value=value )
 
@@ -987,7 +993,7 @@ def make_excel_file():
             WHERE `patients`.`hospital_id` = { hospital_id };
     '''
     followup_table = db.query( q_followup, duplicated=True )
-    print(followup_table[0])
+    #print(followup_table[0])
     #print(followup_table[1])
     followup_ws = wb.create_sheet( title="follow up" )
     table_to_excel( followup_table, followup_ws )
