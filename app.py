@@ -866,7 +866,7 @@ def make_excel_file():
 
     hospital_id = request.args.get("hpid")
     exporting_path = request.args.get("path")
-    print(exporting_path)
+    #print(exporting_path)
     db = Database( **dns )
 
     def get_columns( result ):
@@ -883,7 +883,10 @@ def make_excel_file():
             columns = table[0].keys()
         elif isinstance( table[0], list ):
             columns = table[0]
-            table = table[1]
+            if isinstance(table[1][0], tuple):
+                table = table[1]
+            else:
+                table.pop(0)
 
         x = 1
         for column in columns:
@@ -897,6 +900,11 @@ def make_excel_file():
                     value = table_row[ column ]
                 elif isinstance( table[0], tuple ):
                     value = table_row[ j ]
+                elif isinstance( table[0], list ):
+                    try:
+                        value = table_row[ j ]
+                    except IndexError:
+                        value = None
                 if value == b'\x00':
                     if column == 'sex':
                         value = 'Female'
@@ -972,12 +980,43 @@ def make_excel_file():
     '''
     following_session_table = db.query( q_following_session )
 
+    # horizonize
     following_session_df = pd.DataFrame( following_session_table )
+    following_session_df = following_session_df.drop(['following_ablation_id', 'patient_serial_number', 'ucg_id', 'internal_medicine_id'], axis=1)
+    patients = following_session_df[ "patient_number" ].unique()
+
+    fs_table = []
+    iterated_count = 0
+    for patient in patients:
+        following_session_a_patient = following_session_df[ following_session_df[ "patient_number" ] == patient ]
+        
+        patient_row = []
+        for count, row in enumerate( following_session_a_patient.itertuples() ):
+            row_list = list( row )
+            row_list.pop(0)
+            patient_row.extend( row_list )
+            if count > iterated_count:
+                iterated_count = count
+        
+        #print( patient_row )
+        fs_table.append( patient_row )
+
+    original_headers = following_session_df.columns.tolist()
+    #original_headers.pop(0)
+    header_list = []
+    for i in range(iterated_count):
+        header_list.extend(original_headers)
+
+    fs_table.insert(0,header_list)
+
+
+    #print( fs_table )
+
 
     following_session_ws = wb.create_sheet( title="following session" )
-    table_to_excel( following_session_table, following_session_ws )
-    for count,col in enumerate([2,4,5]):
-        following_session_ws.delete_cols(col - count)
+    table_to_excel( fs_table, following_session_ws )
+    #for count,col in enumerate([2,4,5]):
+    #    following_session_ws.delete_cols(col - count)
 
     #Follow up
     q_followup = f'''
