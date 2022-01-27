@@ -968,8 +968,8 @@ def make_excel_file():
 
     #Following session
     q_following_session = f'''
-        SELECT  `patients`.`patient_number`, `following_ablation`.*, `ucg`.*, `internal_medicine`.* FROM `following_ablation`
-            LEFT JOIN `patients`
+        SELECT  `patients`.`patient_number`, `following_ablation`.*, `ucg`.*, `internal_medicine`.* FROM `patients`
+            LEFT JOIN `following_ablation`
                 ON `following_ablation`.`patient_serial_number` = `patients`.`patient_serial_number`
             LEFT JOIN `ucg`
                 ON `following_ablation`.`ucg_id` = `ucg`.`ucg_id`
