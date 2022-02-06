@@ -923,7 +923,8 @@ def make_excel_file():
         SELECT * FROM `patients`
             LEFT JOIN `ucg`
                 ON `patients`.`ucg_id` = `ucg`.`ucg_id`
-            WHERE `patients`.`hospital_id` = { hospital_id };
+            WHERE `patients`.`hospital_id` = { hospital_id }
+            ORDER BY `patients`.`patient_number`;
     '''
     baseline_table = db.query( q_baseline )
 
@@ -939,7 +940,8 @@ def make_excel_file():
         SELECT `patients`.`patient_number`, `first_ablation`.* FROM `patients`
             LEFT JOIN `first_ablation`
                 ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number`
-            WHERE `patients`.`hospital_id` = { hospital_id };
+            WHERE `patients`.`hospital_id` = { hospital_id }
+            ORDER BY `patients`.`patient_number`;
     '''
     first_session_table = db.query( q_first_session )
 
@@ -956,7 +958,8 @@ def make_excel_file():
                 ON `patients`.`patient_serial_number` = `first_ablation`.`patient_serial_number`
             LEFT JOIN `internal_medicine`
                 ON `first_ablation`.`internal_medicine_id` = `internal_medicine`.`internal_medicine_id`
-            WHERE `patients`.`hospital_id` = { hospital_id };
+            WHERE `patients`.`hospital_id` = { hospital_id }
+            ORDER BY `patients`.`patient_number`;
     '''
     first_medicine_table = db.query( q_first_medicine )
 
@@ -1030,6 +1033,7 @@ def make_excel_file():
             LEFT JOIN `blood_exam` as `blood2` ON `follow_up`.`blood_id2` = `blood2`.`blood_id`
             LEFT JOIN `blood_exam` as `blood3` ON `follow_up`.`blood_id3` = `blood3`.`blood_id`
             WHERE `patients`.`hospital_id` = { hospital_id };
+            ORDER BY `patients`.`patient_number`;
     '''
     followup_table = db.query( q_followup, duplicated=True )
     #print(followup_table[0])
